@@ -1,0 +1,1153 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+
+<title>Berkeley Forests Analytics</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Berkeley Forests Analytics</h1>
+
+
+
+<div id="introduction" class="section level2">
+<h2>Introduction</h2>
+<p>In this vignette, we demonstrate the use of the
+<code>BerkeleyForestsAnalytics</code> package. We provide an example of
+how you might use the BFA package to compile pre- and post-burn field
+data. Through this example, we highlight some key components of the BFA
+package:</p>
+<ol style="list-style-type: decimal">
+<li>Handling of missing data</li>
+<li>Handling of 0-values</li>
+<li>Warning and error messages
+<ul>
+<li>Note: we do not demonstrate the full suite of warning and error
+messages. We demonstrate a subset of warnings and errors to give you an
+idea of what kinds of messages to expect, and how you might address
+them.</li>
+</ul></li>
+</ol>
+<p>The vignette is not a replacement for the README file, which covers
+the inputs and outputs of each function in detail. Additionally, the
+README gives detailed background information and references for the
+methods used in the package. We recommend that you review the README
+prior to or in conjunction with the vignette (<a href="https://github.com/kearutherford/BerkeleyForestsAnalytics#demonstration">Find
+README here</a>).</p>
+<p>To begin, we’ll load the required packages:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">library</span>(BerkeleyForestsAnalytics)</span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a><span class="fu">library</span>(tidyr)</span></code></pre></div>
+</div>
+<div id="description-of-data" class="section level2">
+<h2>Description of data</h2>
+<p>This vignette uses data from the Fire and Fire Surrogate (FFS) Study.
+In brief, FFS is an experimental study that was designed to evaluate the
+impacts of fire-only (prescribed fire), mechanical-only (mechanical
+thinning from below followed by mastication), and mechanical + fire
+(mechanical thinning from below followed by mastication followed by
+prescribed fire) treatments on forest structure, ecological function,
+and future fire behavior (<a href="https://forests.berkeley.edu/research/current-projects/fire-and-fire-surrogates-study">Read
+more about the FFS Study here</a>).</p>
+<p>The data used in this vignette are from the fire-only (i.e.,
+prescribed fire) stands. We used data from two time periods: before
+treatment (2001) and one year after treatment (2003). Note that the data
+were slightly modified for demonstrations purposes. Therefore, the
+outputs should not be taken to be actual findings from the FFS
+Study.</p>
+<p><br></p>
+<p>The tree data have the following columns:</p>
+<ol style="list-style-type: decimal">
+<li><code>id</code> time:site combined</li>
+<li><code>time</code> pre (pre-burn) or post (post-burn)</li>
+<li><code>site</code> compartment (60, 340, or 400)</li>
+<li><code>plot</code> plot in which the individual tree was
+measured</li>
+<li><code>exp_factor</code> stems per hectare</li>
+<li><code>status</code> live (1) or dead (0)</li>
+<li><code>decay</code> decay class. 1-5 for standing dead trees. 0 for
+live trees.</li>
+<li><code>species</code> species of the individual tree, using
+four-letter species codes</li>
+<li><code>dbh</code> diameter at breast height in centimeters</li>
+<li><code>ht</code> total tree height in meters</li>
+</ol>
+<p><br></p>
+<p>The surface and ground fuels data have the following columns:</p>
+<ol style="list-style-type: decimal">
+<li><code>time</code> pre (pre-burn) or post (post-burn)</li>
+<li><code>site</code> compartment (60, 340, or 400)</li>
+<li><code>plot</code> plot in which the individual transect was
+measured</li>
+<li><code>transect</code> azimuth of transect on which the fuel data
+were collected</li>
+<li><code>count_1h</code> count of 1-hour fuels</li>
+<li><code>count_10h</code> count of 10-hour fuels</li>
+<li><code>count_100h</code> count of 100-hour fuels</li>
+<li><code>length_1h</code> length of the sampling transect for 1-hour
+fuels in meters</li>
+<li><code>length_10h</code> length of the sampling transect for 10-hour
+fuels in meters</li>
+<li><code>length_100h</code> length of the sampling transect for
+100-hour fuels in meters</li>
+<li><code>length_1000h</code> length of the sampling transect for
+1000-hour fuels in meters</li>
+<li><code>ssd_S</code> sum-of-squared-diameters for sound 1000-hour
+fuels</li>
+<li><code>ssd_R</code> sum-of-squared-diameters for rotten 1000-hour
+fuels</li>
+<li><code>litter_depth</code> litter depth in centimeters</li>
+<li><code>duff_depth</code> duff depth in centimeters</li>
+<li><code>slope</code> slope along the transect in percent</li>
+</ol>
+</div>
+<div id="tree-biomass" class="section level2">
+<h2>Tree biomass</h2>
+<p>First, we’ll use the <code>SummaryBiomass()</code> function to get
+above-ground stem, bark, and branch tree biomass at the plot level.</p>
+<p>Let’s investigate the input dataframe:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="co"># Note that the example data used in this vignette is included with the package</span></span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a><span class="co"># which is why we do not have to read in the data</span></span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a><span class="fu">head</span>(vign_trees_1)</span></code></pre></div>
+<pre><code>##         id time site plot exp_factor status decay species  dbh   ht
+## 1 post_340 post  340  103      24.69      1     0    QUKE 85.3 35.2
+## 2 post_340 post  340  103      24.69      1     0    QUKE 71.4 31.1
+## 3 post_340 post  340  103      24.69      1     0    ABCO 34.3 22.5
+## 4 post_340 post  340  103      24.69      1     0    ABCO 18.3 15.7
+## 5 post_340 post  340  103      24.69      1     0    ABCO 52.8 33.0
+## 6 post_340 post  340  103      24.69      1     0    ABCO 19.8 17.5</code></pre>
+<p><br></p>
+<p><strong>Attempt 1:</strong> Now, let’s try using
+<code>SummaryBiomass()</code>. We’ll keep the defaults for sp_codes (=
+“4letter”), units (= “metric”), and results (= “by_plot):</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a>tree_bio <span class="ot">&lt;-</span> <span class="fu">SummaryBiomass</span>(<span class="at">data =</span> vign_trees_1,</span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a>                           <span class="at">site =</span> <span class="st">&quot;id&quot;</span>,</span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a>                           <span class="at">plot =</span> <span class="st">&quot;plot&quot;</span>,</span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a>                           <span class="at">exp_factor =</span> <span class="st">&quot;exp_factor&quot;</span>,</span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a>                           <span class="at">status =</span> <span class="st">&quot;status&quot;</span>,</span>
+<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a>                           <span class="at">decay_class =</span> <span class="st">&quot;decay&quot;</span>,</span>
+<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a>                           <span class="at">species =</span> <span class="st">&quot;species&quot;</span>,</span>
+<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a>                           <span class="at">dbh =</span> <span class="st">&quot;dbh&quot;</span>,</span>
+<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a>                           <span class="at">ht =</span> <span class="st">&quot;ht&quot;</span>)</span></code></pre></div>
+<pre><code>## Error in ValidateSumData(data_val = data, site_val = site, plot_val = plot, : There are plots with a recorded expansion factor of 0, but with more than one row.
+## Plots with no trees should be represented by a single row with site and plot filled in as appropriate and an exp_factor of 0.</code></pre>
+<p>And we get an error message. It looks like there is an improper use
+of a 0 expansion factor. An expansion factor of 0 should only be used to
+represent a plot with no trees. Let’s look at where 0 expansion factors
+show up in the data:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a>vign_trees_1 <span class="sc">%&gt;%</span></span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>  <span class="fu">filter</span>(exp_factor <span class="sc">==</span> <span class="dv">0</span>)</span></code></pre></div>
+<pre><code>##        id time site plot exp_factor status decay species  dbh   ht
+## 1 post_60 post   60  112          0      1     0    CADE 25.4 14.4
+## 2 post_60 post   60  113          0   &lt;NA&gt;  &lt;NA&gt;    &lt;NA&gt;   NA   NA</code></pre>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a>vign_trees_1 <span class="sc">%&gt;%</span></span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a>  <span class="fu">filter</span>(time <span class="sc">==</span> <span class="st">&quot;post&quot;</span>, site <span class="sc">==</span> <span class="st">&quot;60&quot;</span>, plot <span class="sc">==</span> <span class="st">&quot;112&quot;</span>)</span></code></pre></div>
+<pre><code>##         id time site plot exp_factor status decay species  dbh   ht
+## 1  post_60 post   60  112      24.69      0     3    QUKE 51.1 22.2
+## 2  post_60 post   60  112      24.69      1     0    ABCO 69.9 30.9
+## 3  post_60 post   60  112      24.69      1     0    ABCO 58.2 30.1
+## 4  post_60 post   60  112      24.69      1     0    ABCO 23.6 17.6
+## 5  post_60 post   60  112      24.69      1     0    ABCO 42.7 24.0
+## 6  post_60 post   60  112      24.69      1     0    PSME 51.8 29.4
+## 7  post_60 post   60  112      24.69      1     0    CADE 25.1 11.5
+## 8  post_60 post   60  112      24.69      1     0    CADE 53.8 25.0
+## 9  post_60 post   60  112      24.69      1     0    CADE 42.7 23.1
+## 10 post_60 post   60  112       0.00      1     0    CADE 25.4 14.4</code></pre>
+<p>It looks like a 0 expansion factor is properly used for post-60-113,
+but improperly used for post-60-112. We know what plot radius was used
+for larger trees, so we can confidently fill in the correct exp_factor
+here (24.69). The expansion factor will differ among studies. If a
+nested plot design was used, the expansion factor will differ among
+trees within the same plot.</p>
+<p><br></p>
+<p><strong>Attempt 2:</strong> After correcting the expansion factor in
+the input data, let’s try again:</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a>tree_bio <span class="ot">&lt;-</span> <span class="fu">SummaryBiomass</span>(<span class="at">data =</span> vign_trees_2,</span>
+<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a>                           <span class="at">site =</span> <span class="st">&quot;id&quot;</span>,</span>
+<span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a>                           <span class="at">plot =</span> <span class="st">&quot;plot&quot;</span>,</span>
+<span id="cb10-4"><a href="#cb10-4" tabindex="-1"></a>                           <span class="at">exp_factor =</span> <span class="st">&quot;exp_factor&quot;</span>,</span>
+<span id="cb10-5"><a href="#cb10-5" tabindex="-1"></a>                           <span class="at">status =</span> <span class="st">&quot;status&quot;</span>,</span>
+<span id="cb10-6"><a href="#cb10-6" tabindex="-1"></a>                           <span class="at">decay_class =</span> <span class="st">&quot;decay&quot;</span>,</span>
+<span id="cb10-7"><a href="#cb10-7" tabindex="-1"></a>                           <span class="at">species =</span> <span class="st">&quot;species&quot;</span>,</span>
+<span id="cb10-8"><a href="#cb10-8" tabindex="-1"></a>                           <span class="at">dbh =</span> <span class="st">&quot;dbh&quot;</span>,</span>
+<span id="cb10-9"><a href="#cb10-9" tabindex="-1"></a>                           <span class="at">ht =</span> <span class="st">&quot;ht&quot;</span>,</span>
+<span id="cb10-10"><a href="#cb10-10" tabindex="-1"></a>                           <span class="at">results =</span> <span class="st">&quot;by_plot&quot;</span>)</span></code></pre></div>
+<pre><code>## Warning in ValidateSumData(data_val = data, site_val = site, plot_val = plot, : There are dead trees with NA and/or zero decay class codes.
+## The biomass of these dead trees will NOT be adjusted.
+## Consider investigating these trees with mismatched status/decay class.
+## </code></pre>
+<pre><code>## Error in ValidateSumData(data_val = data, site_val = site, plot_val = plot, : Not all species codes were recognized!
+## Unrecognized codes: ABCCO SME</code></pre>
+<p>And we get another error message. It looks like there are some
+typos/transcription errors in the species codes. Looking at the list of
+unrecognized codes, we can tell that “ABCCO” should be “ABCO” (<em>Abies
+concolor</em>, commonly known as white fir) and “SME” should probably be
+“PSME” (<em>Pseudotsuga menziesii</em>, commonly known as Douglas-fir).
+Depending on the severity of the typo, you may want to go back to double
+check the species recorded on the original datasheet. In this case, the
+typos are fairly obvious. Let’s figure out where these typos occur in
+the data:</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a>vign_trees_2 <span class="sc">%&gt;%</span></span>
+<span id="cb13-2"><a href="#cb13-2" tabindex="-1"></a>  <span class="fu">filter</span>(species <span class="sc">==</span> <span class="st">&quot;ABCCO&quot;</span> <span class="sc">|</span> species <span class="sc">==</span> <span class="st">&quot;SME&quot;</span>)</span></code></pre></div>
+<pre><code>##         id time site plot exp_factor status decay species  dbh   ht
+## 1 post_340 post  340  108      24.69      1     0   ABCCO 12.7 11.3
+## 2 post_340 post  340  109      24.69      1     0     SME 19.6 13.4</code></pre>
+<p><br></p>
+<p><strong>Attempt 3:</strong> After correcting the species codes in the
+input data, let’s try again:</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" tabindex="-1"></a>tree_bio <span class="ot">&lt;-</span> <span class="fu">SummaryBiomass</span>(<span class="at">data =</span> vign_trees_3,</span>
+<span id="cb15-2"><a href="#cb15-2" tabindex="-1"></a>                           <span class="at">site =</span> <span class="st">&quot;id&quot;</span>,</span>
+<span id="cb15-3"><a href="#cb15-3" tabindex="-1"></a>                           <span class="at">plot =</span> <span class="st">&quot;plot&quot;</span>,</span>
+<span id="cb15-4"><a href="#cb15-4" tabindex="-1"></a>                           <span class="at">exp_factor =</span> <span class="st">&quot;exp_factor&quot;</span>,</span>
+<span id="cb15-5"><a href="#cb15-5" tabindex="-1"></a>                           <span class="at">status =</span> <span class="st">&quot;status&quot;</span>,</span>
+<span id="cb15-6"><a href="#cb15-6" tabindex="-1"></a>                           <span class="at">decay_class =</span> <span class="st">&quot;decay&quot;</span>,</span>
+<span id="cb15-7"><a href="#cb15-7" tabindex="-1"></a>                           <span class="at">species =</span> <span class="st">&quot;species&quot;</span>,</span>
+<span id="cb15-8"><a href="#cb15-8" tabindex="-1"></a>                           <span class="at">dbh =</span> <span class="st">&quot;dbh&quot;</span>,</span>
+<span id="cb15-9"><a href="#cb15-9" tabindex="-1"></a>                           <span class="at">ht =</span> <span class="st">&quot;ht&quot;</span>,</span>
+<span id="cb15-10"><a href="#cb15-10" tabindex="-1"></a>                           <span class="at">results =</span> <span class="st">&quot;by_plot&quot;</span>)</span></code></pre></div>
+<pre><code>## Warning in ValidateSumData(data_val = data, site_val = site, plot_val = plot, : There are dead trees with NA and/or zero decay class codes.
+## The biomass of these dead trees will NOT be adjusted.
+## Consider investigating these trees with mismatched status/decay class.
+## </code></pre>
+<pre><code>## Warning in ValidateSumData(data_val = data, site_val = site, plot_val = plot, : There are missing DBH values in the provided dataframe.
+## Trees with NA DBH will have NA biomass estimates.
+## </code></pre>
+<pre><code>## Warning in ValidateSumData(data_val = data, site_val = site, plot_val = plot, : The allometric equations are for live trees with DBH &gt;= 2.54cm and dead trees with DBH &gt;= 12.7cm.
+## You inputted live trees with DBH &lt; 2.54cm. These trees will have NA biomass estimates.
+## </code></pre>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" tabindex="-1"></a><span class="fu">head</span>(tree_bio)</span></code></pre></div>
+<pre><code>##       site plot live_Mg_ha dead_Mg_ha
+## 1 post_340  103     470.15      10.08
+## 2 post_340  104     241.31       0.00
+## 3 post_340  108     156.67       0.00
+## 4 post_340  109     169.09       0.00
+## 5 post_340  111     189.39       4.31
+## 6 post_340  112     823.50      14.57</code></pre>
+<p>This time the function runs. However, we get some warning messages.
+Let’s look at the first warning, which tells us that there are trees
+with mismatched status/decay class. Recall that dead trees should have a
+decay class of 1-5 and live trees should have a decay class of NA or 0
+(in this dataset we use 0 for live trees). Let’s figure out where
+mismatches occur in the data:</p>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" tabindex="-1"></a>vign_trees_3 <span class="sc">%&gt;%</span> </span>
+<span id="cb21-2"><a href="#cb21-2" tabindex="-1"></a>  <span class="fu">filter</span>(status <span class="sc">==</span> <span class="dv">0</span>, decay <span class="sc">==</span> <span class="dv">0</span> <span class="sc">|</span> <span class="fu">is.na</span>(decay))</span></code></pre></div>
+<pre><code>##       id time site plot exp_factor status decay species  dbh   ht
+## 1 pre_60  pre   60   27      24.69      0     0    CADE 42.2 21.6</code></pre>
+<p>This CADE (<em>Calocedrus decurrens</em>, commonly known as incense
+cedar) was documented as dead (status = 0) but was assigned a decay
+class of 0 (which is reserved for live trees). We look back at the
+original datasheet (not shown here) and see that the tree was recorded
+as dead with a decay class of 0 in the field (which tells us this was
+not a transcription error). However, we also notice that a height to
+live crown base was recorded for the tree, indicating that the dead
+status was likely a recording error. Given that two pieces of
+information recorded for the tree point to a live status (i.e., a decay
+class of 0 and a height to live crown base), we can fairly confidently
+change the CADE’s status to live.</p>
+<p><br></p>
+<p><strong>Attempt 4:</strong> After correcting for the mismatch in
+status/decay class, let’s try again:</p>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" tabindex="-1"></a>tree_bio <span class="ot">&lt;-</span> <span class="fu">SummaryBiomass</span>(<span class="at">data =</span> vign_trees_4,</span>
+<span id="cb23-2"><a href="#cb23-2" tabindex="-1"></a>                           <span class="at">site =</span> <span class="st">&quot;id&quot;</span>,</span>
+<span id="cb23-3"><a href="#cb23-3" tabindex="-1"></a>                           <span class="at">plot =</span> <span class="st">&quot;plot&quot;</span>,</span>
+<span id="cb23-4"><a href="#cb23-4" tabindex="-1"></a>                           <span class="at">exp_factor =</span> <span class="st">&quot;exp_factor&quot;</span>,</span>
+<span id="cb23-5"><a href="#cb23-5" tabindex="-1"></a>                           <span class="at">status =</span> <span class="st">&quot;status&quot;</span>,</span>
+<span id="cb23-6"><a href="#cb23-6" tabindex="-1"></a>                           <span class="at">decay_class =</span> <span class="st">&quot;decay&quot;</span>,</span>
+<span id="cb23-7"><a href="#cb23-7" tabindex="-1"></a>                           <span class="at">species =</span> <span class="st">&quot;species&quot;</span>,</span>
+<span id="cb23-8"><a href="#cb23-8" tabindex="-1"></a>                           <span class="at">dbh =</span> <span class="st">&quot;dbh&quot;</span>,</span>
+<span id="cb23-9"><a href="#cb23-9" tabindex="-1"></a>                           <span class="at">ht =</span> <span class="st">&quot;ht&quot;</span>,</span>
+<span id="cb23-10"><a href="#cb23-10" tabindex="-1"></a>                           <span class="at">results =</span> <span class="st">&quot;by_plot&quot;</span>)</span></code></pre></div>
+<pre><code>## Warning in ValidateSumData(data_val = data, site_val = site, plot_val = plot, : There are missing DBH values in the provided dataframe.
+## Trees with NA DBH will have NA biomass estimates.
+## </code></pre>
+<pre><code>## Warning in ValidateSumData(data_val = data, site_val = site, plot_val = plot, : The allometric equations are for live trees with DBH &gt;= 2.54cm and dead trees with DBH &gt;= 12.7cm.
+## You inputted live trees with DBH &lt; 2.54cm. These trees will have NA biomass estimates.
+## </code></pre>
+<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" tabindex="-1"></a><span class="fu">head</span>(tree_bio)</span></code></pre></div>
+<pre><code>##       site plot live_Mg_ha dead_Mg_ha
+## 1 post_340  103     470.15      10.08
+## 2 post_340  104     241.31       0.00
+## 3 post_340  108     156.67       0.00
+## 4 post_340  109     169.09       0.00
+## 5 post_340  111     189.39       4.31
+## 6 post_340  112     823.50      14.57</code></pre>
+<p>The first warning message is gone (good!), but we still have two
+other warning messages. Let’s look at the next warning, which tells us
+there are missing DBH values in the dataframe. Let’s look at where NA
+DBH values show up in the data:</p>
+<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" tabindex="-1"></a>vign_trees_4 <span class="sc">%&gt;%</span> </span>
+<span id="cb28-2"><a href="#cb28-2" tabindex="-1"></a>  <span class="fu">filter</span>(exp_factor <span class="sc">&gt;</span> <span class="dv">0</span>, <span class="fu">is.na</span>(dbh))</span></code></pre></div>
+<pre><code>##        id time site plot exp_factor status decay species dbh   ht
+## 1 pre_340  pre  340  115      24.69      1     0    PILA  NA 24.6</code></pre>
+<p>We look back at the original datasheet (not shown here) and see that
+DBH was recorded for the tree in the field. This was just a simple
+transcription error. However, in your own dataset you may have DBH
+values (or height values) that are truly missing. In the case of truly
+missing values, you may want to build a model that will allow you to
+predict DBH from total height (or total height from DBH). Such models
+may already exist for your study area.</p>
+<p><br></p>
+<p><strong>Attempt 5:</strong> After filling in the missing DBH value,
+let’s try again:</p>
+<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" tabindex="-1"></a>tree_bio <span class="ot">&lt;-</span> <span class="fu">SummaryBiomass</span>(<span class="at">data =</span> vign_trees_5,</span>
+<span id="cb30-2"><a href="#cb30-2" tabindex="-1"></a>                           <span class="at">site =</span> <span class="st">&quot;id&quot;</span>,</span>
+<span id="cb30-3"><a href="#cb30-3" tabindex="-1"></a>                           <span class="at">plot =</span> <span class="st">&quot;plot&quot;</span>,</span>
+<span id="cb30-4"><a href="#cb30-4" tabindex="-1"></a>                           <span class="at">exp_factor =</span> <span class="st">&quot;exp_factor&quot;</span>,</span>
+<span id="cb30-5"><a href="#cb30-5" tabindex="-1"></a>                           <span class="at">status =</span> <span class="st">&quot;status&quot;</span>,</span>
+<span id="cb30-6"><a href="#cb30-6" tabindex="-1"></a>                           <span class="at">decay_class =</span> <span class="st">&quot;decay&quot;</span>,</span>
+<span id="cb30-7"><a href="#cb30-7" tabindex="-1"></a>                           <span class="at">species =</span> <span class="st">&quot;species&quot;</span>,</span>
+<span id="cb30-8"><a href="#cb30-8" tabindex="-1"></a>                           <span class="at">dbh =</span> <span class="st">&quot;dbh&quot;</span>,</span>
+<span id="cb30-9"><a href="#cb30-9" tabindex="-1"></a>                           <span class="at">ht =</span> <span class="st">&quot;ht&quot;</span>,</span>
+<span id="cb30-10"><a href="#cb30-10" tabindex="-1"></a>                           <span class="at">results =</span> <span class="st">&quot;by_plot&quot;</span>)</span></code></pre></div>
+<pre><code>## Warning in ValidateSumData(data_val = data, site_val = site, plot_val = plot, : The allometric equations are for live trees with DBH &gt;= 2.54cm and dead trees with DBH &gt;= 12.7cm.
+## You inputted live trees with DBH &lt; 2.54cm. These trees will have NA biomass estimates.
+## </code></pre>
+<div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" tabindex="-1"></a><span class="fu">head</span>(tree_bio)</span></code></pre></div>
+<pre><code>##       site plot live_Mg_ha dead_Mg_ha
+## 1 post_340  103     470.15      10.08
+## 2 post_340  104     241.31       0.00
+## 3 post_340  108     156.67       0.00
+## 4 post_340  109     169.09       0.00
+## 5 post_340  111     189.39       4.31
+## 6 post_340  112     823.50      14.57</code></pre>
+<p>There’s only one warning message left. The Forest Inventory and
+Analysis (FIA) Regional Biomass Equations are for live trees with a DBH
+&gt;= 2.54 cm (1 in) and dead trees with a DBH &gt;= 12.7 cm (5 in). It
+is not appropriate to use these equations to estimate biomass for trees
+with DBH below the specified cutoffs. We could filter these trees out of
+the dataset to avoid the warning message; however, that isn’t necessary.
+In this example, we’ll leave the small trees in and make note of the
+warning. If you need to calculate biomass for the smaller trees in your
+dataset, you will need to explore other options.</p>
+</div>
+<div id="forest-composition-and-structure" class="section level2">
+<h2>Forest composition and structure</h2>
+<p>Next, we’ll use the <code>ForestComp()</code> and
+<code>ForestStr()</code> functions to get forest composition and
+structure at the plot level.</p>
+<div id="forestcomp" class="section level3">
+<h3>ForestComp()</h3>
+<p>Let’s try using <code>ForestComp()</code> first:</p>
+<div class="sourceCode" id="cb34"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" tabindex="-1"></a>for_comp <span class="ot">&lt;-</span> <span class="fu">ForestComp</span>(<span class="at">data =</span> vign_trees_5,</span>
+<span id="cb34-2"><a href="#cb34-2" tabindex="-1"></a>                       <span class="at">site =</span> <span class="st">&quot;id&quot;</span>,</span>
+<span id="cb34-3"><a href="#cb34-3" tabindex="-1"></a>                       <span class="at">plot =</span> <span class="st">&quot;plot&quot;</span>,</span>
+<span id="cb34-4"><a href="#cb34-4" tabindex="-1"></a>                       <span class="at">exp_factor =</span> <span class="st">&quot;exp_factor&quot;</span>,</span>
+<span id="cb34-5"><a href="#cb34-5" tabindex="-1"></a>                       <span class="at">status =</span> <span class="st">&quot;status&quot;</span>,</span>
+<span id="cb34-6"><a href="#cb34-6" tabindex="-1"></a>                       <span class="at">species =</span> <span class="st">&quot;species&quot;</span>,</span>
+<span id="cb34-7"><a href="#cb34-7" tabindex="-1"></a>                       <span class="at">dbh =</span> <span class="st">&quot;dbh&quot;</span>,</span>
+<span id="cb34-8"><a href="#cb34-8" tabindex="-1"></a>                       <span class="at">relative =</span> <span class="st">&quot;ba&quot;</span>,</span>
+<span id="cb34-9"><a href="#cb34-9" tabindex="-1"></a>                       <span class="at">units =</span> <span class="st">&quot;metric&quot;</span>)</span></code></pre></div>
+<pre><code>## Error in ValidateCompData(data_val = data, site_val = site, plot_val = plot, : The &quot;relative&quot; parameter must be set to either &quot;BA&quot; or &quot;density&quot;.</code></pre>
+<p>We get an error message. It looks like we set the “relative”
+parameter to “ba” instead of “BA”. That’s easy to fix:</p>
+<div class="sourceCode" id="cb36"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" tabindex="-1"></a>for_comp <span class="ot">&lt;-</span> <span class="fu">ForestComp</span>(<span class="at">data =</span> vign_trees_5,</span>
+<span id="cb36-2"><a href="#cb36-2" tabindex="-1"></a>                       <span class="at">site =</span> <span class="st">&quot;id&quot;</span>,</span>
+<span id="cb36-3"><a href="#cb36-3" tabindex="-1"></a>                       <span class="at">plot =</span> <span class="st">&quot;plot&quot;</span>,</span>
+<span id="cb36-4"><a href="#cb36-4" tabindex="-1"></a>                       <span class="at">exp_factor =</span> <span class="st">&quot;exp_factor&quot;</span>,</span>
+<span id="cb36-5"><a href="#cb36-5" tabindex="-1"></a>                       <span class="at">status =</span> <span class="st">&quot;status&quot;</span>,</span>
+<span id="cb36-6"><a href="#cb36-6" tabindex="-1"></a>                       <span class="at">species =</span> <span class="st">&quot;species&quot;</span>,</span>
+<span id="cb36-7"><a href="#cb36-7" tabindex="-1"></a>                       <span class="at">dbh =</span> <span class="st">&quot;dbh&quot;</span>,</span>
+<span id="cb36-8"><a href="#cb36-8" tabindex="-1"></a>                       <span class="at">relative =</span> <span class="st">&quot;BA&quot;</span>,</span>
+<span id="cb36-9"><a href="#cb36-9" tabindex="-1"></a>                       <span class="at">units =</span> <span class="st">&quot;metric&quot;</span>)</span></code></pre></div>
+<pre><code>## The following species were present: ABCO CADE CONU NODE PILA PIPO PSME QUKE</code></pre>
+<div class="sourceCode" id="cb38"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" tabindex="-1"></a><span class="fu">head</span>(for_comp, <span class="at">n =</span> <span class="dv">16</span>)</span></code></pre></div>
+<pre><code>##        site plot species dominance
+## 1  post_340  103    QUKE      34.7
+## 2  post_340  103    ABCO      39.2
+## 3  post_340  103    CADE      26.1
+## 4  post_340  103    PSME       0.0
+## 5  post_340  103    NODE       0.0
+## 6  post_340  103    PIPO       0.0
+## 7  post_340  103    PILA       0.0
+## 8  post_340  103    CONU       0.0
+## 9  post_340  104    QUKE      16.3
+## 10 post_340  104    ABCO      24.3
+## 11 post_340  104    CADE       5.8
+## 12 post_340  104    PSME      53.7
+## 13 post_340  104    NODE       0.0
+## 14 post_340  104    PIPO       0.0
+## 15 post_340  104    PILA       0.0
+## 16 post_340  104    CONU       0.0</code></pre>
+<p>This time the function runs without any warning or error messages.
+However, there is a note with a list of all the species present in the
+input data. Notice in the output (we just show two plots here) that each
+species present is accounted for in each plot, even if the dominance for
+the specific species is 0. When you compile the data beyond the plot
+level (e.g. to the compartment level), it’s important that the 0
+dominance values are captured.</p>
+<p>Before moving on, let’s quickly look at the output for the plot with
+no trees:</p>
+<div class="sourceCode" id="cb40"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" tabindex="-1"></a>for_comp <span class="sc">%&gt;%</span></span>
+<span id="cb40-2"><a href="#cb40-2" tabindex="-1"></a>  <span class="fu">filter</span>(site <span class="sc">==</span> <span class="st">&quot;post_60&quot;</span>, plot <span class="sc">==</span> <span class="st">&quot;113&quot;</span>)</span></code></pre></div>
+<pre><code>##      site plot species dominance
+## 1 post_60  113    QUKE        NA
+## 2 post_60  113    ABCO        NA
+## 3 post_60  113    CADE        NA
+## 4 post_60  113    PSME        NA
+## 5 post_60  113    NODE        NA
+## 6 post_60  113    PIPO        NA
+## 7 post_60  113    PILA        NA
+## 8 post_60  113    CONU        NA</code></pre>
+<p>Notice that the dominance is NA for all species. If there are no
+trees present, then % dominance is not applicable (i.e., NA). But why
+wouldn’t it make sense to say that there is 0% CADE? There’s no CADE on
+the plot, right? However, think about what % dominance actually is:</p>
+<p><span class="math inline">\(\frac{BA_{sp,p}}{BA_{total,p}}\)</span></p>
+<p><em>where</em></p>
+<ul>
+<li><span class="math inline">\(BA_{sp,p}\)</span> is the basal area
+occupied by species sp in plot p</li>
+<li><span class="math inline">\(BA_{total,p}\)</span> is the total basal
+area for plot p</li>
+</ul>
+<p>If there are no trees present on plot p, then <span class="math inline">\(BA_{total,p}\)</span> will be 0. And anything
+divided by 0 is not defined. From both a mathematical and logical
+perspective, % dominance for a plot without trees is not applicable.</p>
+</div>
+<div id="foreststr" class="section level3">
+<h3>ForestStr()</h3>
+<p>Now let’s try using <code>ForestStr()</code>. We’ll keep the default
+for units (= “metric”):</p>
+<div class="sourceCode" id="cb42"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" tabindex="-1"></a>for_str <span class="ot">&lt;-</span> <span class="fu">ForestStr</span>(<span class="at">data =</span> vign_trees_5,</span>
+<span id="cb42-2"><a href="#cb42-2" tabindex="-1"></a>                     <span class="at">site =</span> <span class="st">&quot;id&quot;</span>,</span>
+<span id="cb42-3"><a href="#cb42-3" tabindex="-1"></a>                     <span class="at">plot =</span> <span class="st">&quot;plot&quot;</span>,</span>
+<span id="cb42-4"><a href="#cb42-4" tabindex="-1"></a>                     <span class="at">exp_factor =</span> <span class="st">&quot;Exp_factor&quot;</span>,</span>
+<span id="cb42-5"><a href="#cb42-5" tabindex="-1"></a>                     <span class="at">dbh =</span> <span class="st">&quot;dbh&quot;</span>,</span>
+<span id="cb42-6"><a href="#cb42-6" tabindex="-1"></a>                     <span class="at">ht =</span> <span class="st">&quot;ht&quot;</span>)</span></code></pre></div>
+<pre><code>## Error in ValidateStrData(data_val = data, site_val = site, plot_val = plot, : There is no column named &quot;Exp_factor&quot; in the provided dataframe.</code></pre>
+<p>We get an error message. Right, we have a column named “exp_factor”
+but not “Exp_factor” (column names are case sensitive)! That’s easy to
+fix:</p>
+<div class="sourceCode" id="cb44"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" tabindex="-1"></a>for_str <span class="ot">&lt;-</span> <span class="fu">ForestStr</span>(<span class="at">data =</span> vign_trees_5,</span>
+<span id="cb44-2"><a href="#cb44-2" tabindex="-1"></a>                     <span class="at">site =</span> <span class="st">&quot;id&quot;</span>,</span>
+<span id="cb44-3"><a href="#cb44-3" tabindex="-1"></a>                     <span class="at">plot =</span> <span class="st">&quot;plot&quot;</span>,</span>
+<span id="cb44-4"><a href="#cb44-4" tabindex="-1"></a>                     <span class="at">exp_factor =</span> <span class="st">&quot;exp_factor&quot;</span>,</span>
+<span id="cb44-5"><a href="#cb44-5" tabindex="-1"></a>                     <span class="at">dbh =</span> <span class="st">&quot;dbh&quot;</span>,</span>
+<span id="cb44-6"><a href="#cb44-6" tabindex="-1"></a>                     <span class="at">ht =</span> <span class="st">&quot;ht&quot;</span>)</span>
+<span id="cb44-7"><a href="#cb44-7" tabindex="-1"></a></span>
+<span id="cb44-8"><a href="#cb44-8" tabindex="-1"></a><span class="fu">head</span>(for_str)</span></code></pre></div>
+<pre><code>##       site plot sph ba_m2_ha qmd_cm dbh_cm ht_m
+## 1 post_340  103 691    74.04   36.9   32.1 19.1
+## 2 post_340  104 296    41.38   42.2   36.2 17.5
+## 3 post_340  108 963    41.17   23.3   21.4 11.5
+## 4 post_340  109 938    35.22   21.9   16.2  9.3
+## 5 post_340  111 296    40.52   41.7   38.2 18.9
+## 6 post_340  112 667   103.76   44.5   38.5 23.7</code></pre>
+<p>This time the function runs without any warning or error messages.
+But before moving on, let’s once again look at the output for the plot
+with no trees:</p>
+<div class="sourceCode" id="cb46"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" tabindex="-1"></a>for_str <span class="sc">%&gt;%</span></span>
+<span id="cb46-2"><a href="#cb46-2" tabindex="-1"></a>  <span class="fu">filter</span>(site <span class="sc">==</span> <span class="st">&quot;post_60&quot;</span>, plot <span class="sc">==</span> <span class="st">&quot;113&quot;</span>)</span></code></pre></div>
+<pre><code>##      site plot sph ba_m2_ha qmd_cm dbh_cm ht_m
+## 1 post_60  113   0        0     NA     NA   NA</code></pre>
+<p>Notice that basal area (ba_m2_ha) and stems per hectare (sph) are
+both 0. This is correct for a plot with no trees. Then, average
+quadratic mean diameter (qmd_cm), average diameter at breast height
+(dbh_cm), and average height (ht_m) are all NA. These tree-level
+variables are not applicable for a plot without trees. For example,
+there is no “average diameter at breast height” if there are no
+diameters at breast height to take an average of. The average diameter
+at breast height is not 0 in this case! When you compile the data beyond
+the plot level (e.g., to the compartment level), it’s important that the
+0s and NAs are accurately captured. A 0 qmd_cm here (at the plot level)
+would incorrectly pull down the compartment qmd_cm.</p>
+</div>
+</div>
+<div id="surface-and-ground-fuel-loads" class="section level2">
+<h2>Surface and ground fuel loads</h2>
+<p>Finally, we’ll use the <code>FineFuels()</code>,
+<code>CoarseFuels()</code>, and <code>LitterDuff()</code> functions to
+get surface and ground fuel loads at the plot level.</p>
+<p>Let’s investigate the input dataframe:</p>
+<div class="sourceCode" id="cb48"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" tabindex="-1"></a><span class="fu">head</span>(vign_fuels_1)</span></code></pre></div>
+<pre><code>##   time site plot transect count_1h count_10h count_100h length_1h length_10h
+## 1 post  340  103       17        4         1          1      1.83       1.83
+## 2 post  340  103       89       11         2          1      1.83       1.83
+## 3 post  340  104       13        4         0          1      1.83       1.83
+## 4 post  340  104       60        3         0          0      1.83       1.83
+## 5 post  340  108        7       11         1          3      1.83       1.83
+## 6 post  340  108       80       14         4          3      1.83       1.83
+##   length_100h length_1000h ssd_S ssd_R litter_depth duff_depth slope
+## 1        3.05        11.34     0    64         0.00        0.0     7
+## 2        3.05        11.34     0     0         0.00        0.0    15
+## 3        3.05        11.34     0     0         0.00        0.0     6
+## 4        3.05        11.34     0   313         0.50        0.5     8
+## 5        3.05        11.34     0   289         0.75        0.5     7
+## 6        3.05        11.34     0     0         0.00        0.0     2</code></pre>
+<div id="finefuels" class="section level3">
+<h3>FineFuels()</h3>
+<p><strong>Attempt 1:</strong> Now, let’s try using
+<code>FineFuels()</code>. We’ll keep the defaults for sp_codes (=
+“4letter”) and units (= “metric”):</p>
+<div class="sourceCode" id="cb50"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" tabindex="-1"></a>FWD <span class="ot">&lt;-</span> <span class="fu">FineFuels</span>(<span class="at">tree_data =</span> vign_trees_5,</span>
+<span id="cb50-2"><a href="#cb50-2" tabindex="-1"></a>                 <span class="at">fuel_data =</span> vign_fuels_1)</span></code></pre></div>
+<pre><code>## Error in ValidateFWD(fuel_data_val = fuel_data, units_val = units): For fuel_data, there are repeat time:site:plot:transect observations.
+## There should only be one observation/row for an individual transect at a specific time:site:plot.
+## Investigate the following time:site:plot:transect combinations: post-400-9-159</code></pre>
+<p>And we get an error message. It looks like there is a duplicate
+time:site:plot:transect observation for post-400-9-159. Let’s take a
+closer look:</p>
+<div class="sourceCode" id="cb52"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" tabindex="-1"></a>vign_fuels_1 <span class="sc">%&gt;%</span></span>
+<span id="cb52-2"><a href="#cb52-2" tabindex="-1"></a>  <span class="fu">filter</span>(time <span class="sc">==</span> <span class="st">&quot;post&quot;</span>, site <span class="sc">==</span> <span class="st">&quot;400&quot;</span>, plot <span class="sc">==</span> <span class="st">&quot;9&quot;</span>)</span></code></pre></div>
+<pre><code>##   time site plot transect count_1h count_10h count_100h length_1h length_10h
+## 1 post  400    9      159       19         2          0      1.83       1.83
+## 2 post  400    9      159       28         5          0      1.83       1.83
+##   length_100h length_1000h ssd_S ssd_R litter_depth duff_depth slope
+## 1        3.05        11.34     0     0          1.5        1.0    11
+## 2        3.05        11.34     0     0          1.0        0.5    11</code></pre>
+<div class="sourceCode" id="cb54"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb54-1"><a href="#cb54-1" tabindex="-1"></a>vign_fuels_1 <span class="sc">%&gt;%</span></span>
+<span id="cb54-2"><a href="#cb54-2" tabindex="-1"></a>  <span class="fu">filter</span>(time <span class="sc">==</span> <span class="st">&quot;pre&quot;</span>, site <span class="sc">==</span> <span class="st">&quot;400&quot;</span>, plot <span class="sc">==</span> <span class="st">&quot;9&quot;</span>)</span></code></pre></div>
+<pre><code>##   time site plot transect count_1h count_10h count_100h length_1h length_10h
+## 1  pre  400    9      159       32         8          0      1.83       1.83
+## 2  pre  400    9      239       42         5          0      1.83       1.83
+##   length_100h length_1000h ssd_S ssd_R litter_depth duff_depth slope
+## 1        3.05        11.34     0     0            1        4.5    11
+## 2        3.05        11.34   225     0            1        0.5    11</code></pre>
+<p>Based on the field protocol, we know that there should be two
+transects per time:site:plot and that the two azimuths should be the
+same pre- and post-treatment. For the post-treatment observations, we
+can see that the counts, litter depth, and duff depth are not the same.
+Looking at the pre-treatment observations, we can see that the transect
+azimuths for site 400, plot 9 should be 159 and 239. It’s likely that
+one of the two post-400-9 transects should be changed to 239. We look
+back at the original datasheet (not shown here) and see that this is
+indeed the case.</p>
+<p><br></p>
+<p><strong>Attempt 2:</strong> After correcting the transect azimuth in
+the input fuel data, let’s try again:</p>
+<div class="sourceCode" id="cb56"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb56-1"><a href="#cb56-1" tabindex="-1"></a>FWD <span class="ot">&lt;-</span> <span class="fu">FineFuels</span>(<span class="at">tree_data =</span> vign_trees_5,</span>
+<span id="cb56-2"><a href="#cb56-2" tabindex="-1"></a>                 <span class="at">fuel_data =</span> vign_fuels_2)</span></code></pre></div>
+<pre><code>## Error in ValidateFWD(fuel_data_val = fuel_data, units_val = units): For fuel_data, count_100h must be a positive, whole number.</code></pre>
+<p>We get another error message. It looks like there is an issue with
+one (or more) of the 100-hour counts. Let’s figure out where the issue
+occurs in the data:</p>
+<div class="sourceCode" id="cb58"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb58-1"><a href="#cb58-1" tabindex="-1"></a>vign_fuels_2 <span class="sc">%&gt;%</span></span>
+<span id="cb58-2"><a href="#cb58-2" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">count_100h_check =</span> <span class="fu">abs</span>(<span class="fu">round</span>(count_100h))) <span class="sc">%&gt;%</span></span>
+<span id="cb58-3"><a href="#cb58-3" tabindex="-1"></a>  <span class="fu">filter</span>(count_100h <span class="sc">!=</span> count_100h_check)</span></code></pre></div>
+<pre><code>##   time site plot transect count_1h count_10h count_100h length_1h length_10h
+## 1  pre  340   13      215       35        13        1.1      1.83       1.83
+##   length_100h length_1000h ssd_S ssd_R litter_depth duff_depth slope
+## 1        3.05        11.34    81   100          3.5          3     7
+##   count_100h_check
+## 1                1</code></pre>
+<p>We can see that the count_100h value for pre-340-13-215 is 1.1, which
+is not a whole number. We look back at the original datasheet (not shown
+here) and see that this count should be 1. This was a transcription
+error.</p>
+<p><br></p>
+<p><strong>Attempt 3:</strong> After correcting the count_100h value in
+the input fuel data, let’s try again:</p>
+<div class="sourceCode" id="cb60"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb60-1"><a href="#cb60-1" tabindex="-1"></a>FWD <span class="ot">&lt;-</span> <span class="fu">FineFuels</span>(<span class="at">tree_data =</span> vign_trees_5,</span>
+<span id="cb60-2"><a href="#cb60-2" tabindex="-1"></a>                 <span class="at">fuel_data =</span> vign_fuels_3)</span></code></pre></div>
+<pre><code>## Error in ValidateMatches(fuel_match = step1, tree_match = step2): Tree and fuel data did not completely match!
+## These time:site:plot combinations have tree data but no fuel data: pre-340-111 
+## These time:site:plot combinations have fuel data but no tree data: pre-340-11</code></pre>
+<p>And we get yet another error message. Remember that there must be a
+one-to-one match between time:site:plot identities of tree and fuel
+data. See background information in the README file for more on why this
+one-to-one match is important. We known that there isn’t a plot 11 in
+the dataset, but that there is a plot 111. Pre_340_11 should probably be
+corrected to pre_340_111.</p>
+<p><br></p>
+<p><strong>Attempt 4:</strong> After correcting the plot id in the input
+fuel data, let’s try again:</p>
+<div class="sourceCode" id="cb62"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb62-1"><a href="#cb62-1" tabindex="-1"></a>FWD <span class="ot">&lt;-</span> <span class="fu">FineFuels</span>(<span class="at">tree_data =</span> vign_trees_5,</span>
+<span id="cb62-2"><a href="#cb62-2" tabindex="-1"></a>                 <span class="at">fuel_data =</span> vign_fuels_4)</span></code></pre></div>
+<pre><code>## Warning in ValidateFWD(fuel_data_val = fuel_data, units_val = units): For fuel_data, there are missing values in the count_10h column.
+## For transects with NA 10h counts, 10h fuel load estimates will be NA.
+## </code></pre>
+<pre><code>## Warning in ValidateOverstory(tree_data_val = tree_data, sp_codes_val = sp_codes): Not all species codes were recognized! Unrecognized codes were converted to &quot;UNTR&quot; for unknown tree
+## and will receive generic coefficients. Unrecognized codes: CONU NODE QUKE  
+## </code></pre>
+<div class="sourceCode" id="cb65"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb65-1"><a href="#cb65-1" tabindex="-1"></a><span class="fu">head</span>(FWD)</span></code></pre></div>
+<pre><code>##   time site plot load_1h_Mg_ha load_10h_Mg_ha load_100h_Mg_ha load_fwd_Mg_ha
+## 1 post  400  101     0.9029624      1.4033325        0.000000       2.306295
+## 2  pre  400  101     2.2310300      4.7643799        5.382827      12.378237
+## 3 post   60  101     0.3571794      0.0000000        4.563755       4.920934
+## 4  pre   60  101     0.8695333      2.0983663        6.749952       9.717852
+## 5 post  400  102     0.1562554      0.5359028        4.278554       4.970712
+## 6  pre  400  102     0.2723569      3.2140721        2.850828       6.337257
+##   sc_length_1h sc_length_10h sc_length_100h
+## 1     3.652542      3.652542       6.087570
+## 2     3.652542      3.652542       6.087570
+## 3     3.641661      3.641661       6.069435
+## 4     3.641661      3.641661       6.069435
+## 5     3.651810      3.651810       6.086350
+## 6     3.651810      3.651810       6.086350</code></pre>
+<p>This time the function runs. However, we get some warning messages.
+Let’s look at the first warning, which tells us that there are missing
+10-hour counts. Let’s look at where NA count_10h values show up in the
+data:</p>
+<div class="sourceCode" id="cb67"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb67-1"><a href="#cb67-1" tabindex="-1"></a>vign_fuels_4 <span class="sc">%&gt;%</span></span>
+<span id="cb67-2"><a href="#cb67-2" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">is.na</span>(count_10h))</span></code></pre></div>
+<pre><code>##   time site plot transect count_1h count_10h count_100h length_1h length_10h
+## 1 post  400    2      252       12        NA          1      1.83       1.83
+##   length_100h length_1000h ssd_S ssd_R litter_depth duff_depth slope
+## 1        3.05        11.34    81    81            0          0     5</code></pre>
+<p>We look back the the original datasheet (not shown here) and see that
+this 10-hour count was not recorded in the field. It truly is missing,
+and there is little we can do about that at this point. Fortunately,
+there are two transects per time:site:plot. The other transect will
+still allow us to get a plot-level estimate of the 10-hour fuel load.
+The function will appropriately account for the missing 10-hour
+count.</p>
+<p>The final warning message tells us that not all species codes were
+recognized. We look at the list of unrecognized codes: CONU (<em>Cornus
+nuttallii</em>, commonly known as pacific dogwood), NODE
+(<em>Notholithocarpus densiflorus</em>, commonly known as tanoak), and
+QUKE (<em>Quercus kelloggii</em>, commonly known as black oak). None of
+these are species code typos (but you should check for typos!). For the
+surface and ground fuel load calculations, we currently only have the
+necessary values for 19 Sierra Nevada conifer species (see background
+information in the README file for more detail on this topic). These
+three species are hardwoods and are, therefore, not included in the list
+of 19 Sierra Nevada conifers. This warning should not alarm us. Given
+the information currently available for the Sierra Nevada, the best we
+can do is assign generic “all species” values for these hardwoods.</p>
+</div>
+<div id="coarsefuels" class="section level3">
+<h3>CoarseFuels()</h3>
+<p><strong>Attempt 1:</strong> Now, let’s try using
+<code>CoarseFuels()</code>. We’ll keep the defaults for sp_codes (=
+“4letter”) and units (= “metric”):</p>
+<div class="sourceCode" id="cb69"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb69-1"><a href="#cb69-1" tabindex="-1"></a>CWD <span class="ot">&lt;-</span> <span class="fu">CoarseFuels</span>(<span class="at">tree_data =</span> vign_trees_5,</span>
+<span id="cb69-2"><a href="#cb69-2" tabindex="-1"></a>                   <span class="at">fuel_data =</span> vign_fuels_4,</span>
+<span id="cb69-3"><a href="#cb69-3" tabindex="-1"></a>                   <span class="at">summed =</span> <span class="st">&quot;yes&quot;</span>)</span></code></pre></div>
+<pre><code>## Error in ValidateCWD(fuel_data_val = fuel_data, units_val = units, sum_val = summed): For fuel_data, there are missing values in the length_1000h column.</code></pre>
+<p>Another error message! It looks like there is a missing transect
+length. Let’s look at where NA length_1000h values show up in the
+data:</p>
+<div class="sourceCode" id="cb71"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb71-1"><a href="#cb71-1" tabindex="-1"></a>vign_fuels_4 <span class="sc">%&gt;%</span></span>
+<span id="cb71-2"><a href="#cb71-2" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">is.na</span>(length_1000h))</span></code></pre></div>
+<pre><code>##   time site plot transect count_1h count_10h count_100h length_1h length_10h
+## 1 post   60  102      347       21         8          5      1.83       1.83
+##   length_100h length_1000h ssd_S ssd_R litter_depth duff_depth slope
+## 1        3.05           NA     0  1771          0.5       1.25     9</code></pre>
+<p>Based on the field protocol, we know that 1000-hour fuels were
+sampled for 11.34 meters along each transect. This is an easy fix.</p>
+<p><br></p>
+<p><strong>Attempt 2:</strong> After filling in the missing transect
+length, let’s try again:</p>
+<div class="sourceCode" id="cb73"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb73-1"><a href="#cb73-1" tabindex="-1"></a>CWD <span class="ot">&lt;-</span> <span class="fu">CoarseFuels</span>(<span class="at">tree_data =</span> vign_trees_5,</span>
+<span id="cb73-2"><a href="#cb73-2" tabindex="-1"></a>                   <span class="at">fuel_data =</span> vign_fuels_5,</span>
+<span id="cb73-3"><a href="#cb73-3" tabindex="-1"></a>                   <span class="at">summed =</span> <span class="st">&quot;yes&quot;</span>)</span></code></pre></div>
+<pre><code>## Warning in ValidateOverstory(tree_data_val = tree_data, sp_codes_val = sp_codes): Not all species codes were recognized! Unrecognized codes were converted to &quot;UNTR&quot; for unknown tree
+## and will receive generic coefficients. Unrecognized codes: CONU NODE QUKE  
+## </code></pre>
+<div class="sourceCode" id="cb75"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb75-1"><a href="#cb75-1" tabindex="-1"></a><span class="fu">head</span>(CWD)</span></code></pre></div>
+<pre><code>##   time site plot load_1000s_Mg_ha load_1000r_Mg_ha load_cwd_Mg_ha
+## 1 post  400  101          0.00000          0.00000        0.00000
+## 2  pre  400  101          0.00000          8.02592        8.02592
+## 3 post   60  101          0.00000          0.00000        0.00000
+## 4  pre   60  101         18.77363          1.68116       20.45479
+## 5 post  400  102          0.00000          0.00000        0.00000
+## 6  pre  400  102         15.56532          0.00000       15.56532
+##   sc_length_1000s sc_length_1000r
+## 1        22.63378        22.63378
+## 2        22.63378        22.63378
+## 3        22.56636        22.56636
+## 4        22.56636        22.56636
+## 5        22.62925        22.62925
+## 6        22.62925        22.62925</code></pre>
+<p>This time the function runs. We are already familiar with this
+warning message (discussed in the <code>FineFuels()</code> function
+section above).</p>
+</div>
+<div id="litterduff" class="section level3">
+<h3>LitterDuff()</h3>
+<p>Lastly, let’s try using <code>LitterDuff()</code>. We’ll keep the
+defaults for sp_codes (= “4letter”), units (= “metric”), and measurement
+(= “separate”):</p>
+<div class="sourceCode" id="cb77"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb77-1"><a href="#cb77-1" tabindex="-1"></a>LD <span class="ot">&lt;-</span> <span class="fu">LitterDuff</span>(<span class="at">tree_data =</span> vign_trees_5,</span>
+<span id="cb77-2"><a href="#cb77-2" tabindex="-1"></a>                 <span class="at">fuel_data =</span> vign_fuels_5)</span></code></pre></div>
+<pre><code>## Warning in ValidateOverstory(tree_data_val = tree_data, sp_codes_val = sp_codes): Not all species codes were recognized! Unrecognized codes were converted to &quot;UNTR&quot; for unknown tree
+## and will receive generic coefficients. Unrecognized codes: CONU NODE QUKE  
+## </code></pre>
+<div class="sourceCode" id="cb79"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb79-1"><a href="#cb79-1" tabindex="-1"></a><span class="fu">head</span>(LD)</span></code></pre></div>
+<pre><code>##   time site plot litter_Mg_ha duff_Mg_ha
+## 1 post  400  101     8.207450   10.78962
+## 2  pre  400  101    22.940513   82.86332
+## 3 post   60  101     0.000000    0.00000
+## 4  pre   60  101    37.114751   86.42521
+## 5 post  400  102     9.304178    7.08900
+## 6  pre  400  102    32.336705   31.92495</code></pre>
+<p>The function runs. Once again, we are familiar with this particular
+warning message (discussed in the <code>FineFuels()</code> function
+section above).</p>
+</div>
+</div>
+<div id="further-data-compilation" class="section level2">
+<h2>Further data compilation</h2>
+<p>Now that we have everything summarized at the plot level, let’s try
+compiling some of the data to the compartment level and then to the
+entire treatment (here the fire-only treatment) level.</p>
+<div id="tree-biomass-1" class="section level3">
+<h3>Tree biomass</h3>
+<p><strong>Step 1:</strong> estimate tree biomass at the plot level</p>
+<p>We already went through this process above, but let’s recall what the
+output dataframe looks like:</p>
+<div class="sourceCode" id="cb81"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb81-1"><a href="#cb81-1" tabindex="-1"></a><span class="fu">head</span>(tree_bio)</span></code></pre></div>
+<pre><code>##       site plot live_Mg_ha dead_Mg_ha
+## 1 post_340  103     470.15      10.08
+## 2 post_340  104     241.31       0.00
+## 3 post_340  108     156.67       0.00
+## 4 post_340  109     169.09       0.00
+## 5 post_340  111     189.39       4.31
+## 6 post_340  112     823.50      14.57</code></pre>
+<p><br></p>
+<p><strong>Step 2:</strong> create all necessary columns for input into
+the <code>CompilePlots()</code> function</p>
+<div class="sourceCode" id="cb83"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb83-1"><a href="#cb83-1" tabindex="-1"></a>tree_bio_2 <span class="ot">&lt;-</span> tree_bio <span class="sc">%&gt;%</span></span>
+<span id="cb83-2"><a href="#cb83-2" tabindex="-1"></a>  <span class="fu">separate</span>(site, <span class="fu">c</span>(<span class="st">&quot;time&quot;</span>, <span class="st">&quot;site&quot;</span>)) <span class="sc">%&gt;%</span> <span class="co"># separate id into time and site columns </span></span>
+<span id="cb83-3"><a href="#cb83-3" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">trt_type =</span> <span class="st">&quot;fire&quot;</span>) <span class="sc">%&gt;%</span> <span class="co"># create a trt_type column </span></span>
+<span id="cb83-4"><a href="#cb83-4" tabindex="-1"></a>  <span class="fu">select</span>(time, trt_type, site, plot, <span class="fu">everything</span>()) <span class="co"># organize columns as desired </span></span>
+<span id="cb83-5"><a href="#cb83-5" tabindex="-1"></a></span>
+<span id="cb83-6"><a href="#cb83-6" tabindex="-1"></a><span class="fu">head</span>(tree_bio_2)</span></code></pre></div>
+<pre><code>##   time trt_type site plot live_Mg_ha dead_Mg_ha
+## 1 post     fire  340  103     470.15      10.08
+## 2 post     fire  340  104     241.31       0.00
+## 3 post     fire  340  108     156.67       0.00
+## 4 post     fire  340  109     169.09       0.00
+## 5 post     fire  340  111     189.39       4.31
+## 6 post     fire  340  112     823.50      14.57</code></pre>
+<p><br></p>
+<p><strong>Step 3:</strong> input data into
+<code>CompilePlots()</code></p>
+<div class="sourceCode" id="cb85"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb85-1"><a href="#cb85-1" tabindex="-1"></a><span class="co"># keep the defaults for wt_data (= &quot;not_needed&quot;)</span></span>
+<span id="cb85-2"><a href="#cb85-2" tabindex="-1"></a>tree_bio_sum <span class="ot">&lt;-</span> <span class="fu">CompilePlots</span>(<span class="at">data =</span> tree_bio_2,</span>
+<span id="cb85-3"><a href="#cb85-3" tabindex="-1"></a>                             <span class="at">design =</span> <span class="st">&quot;FFS&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb86"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb86-1"><a href="#cb86-1" tabindex="-1"></a>tree_bio_sum<span class="sc">$</span>site <span class="co"># pull out site-level summary </span></span></code></pre></div>
+<pre><code>##   time trt_type site avg_live_Mg_ha se_live_Mg_ha avg_dead_Mg_ha se_dead_Mg_ha
+## 1 post     fire  340       315.9475      37.45587       7.713500     3.2631872
+## 2 post     fire  400       290.6375      22.01452       1.537500     0.5935450
+## 3 post     fire   60       223.9916      26.24832       5.202632     2.9223176
+## 4  pre     fire  340       315.1080      35.60767      13.598500     5.2956273
+## 5  pre     fire  400       291.7030      22.18940       1.288000     0.5949558
+## 6  pre     fire   60       246.3984      23.62663      10.758421     9.8535120</code></pre>
+<div class="sourceCode" id="cb88"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb88-1"><a href="#cb88-1" tabindex="-1"></a>tree_bio_sum<span class="sc">$</span>trt_type <span class="co"># pull out treatment-level summary </span></span></code></pre></div>
+<pre><code>##   time trt_type avg_live_Mg_ha se_live_Mg_ha avg_dead_Mg_ha se_dead_Mg_ha
+## 1 post     fire       276.8589      27.42481       4.817877      1.793207
+## 2  pre     fire       284.4031      20.16778       8.548307      3.721584</code></pre>
+</div>
+<div id="fine-woody-debris" class="section level3">
+<h3>Fine woody debris</h3>
+<p><strong>Step 1:</strong> estimate fine fuel loads at the plot
+level</p>
+<p>We already went through this process above, but let’s recall what the
+output dataframe looks like:</p>
+<div class="sourceCode" id="cb90"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb90-1"><a href="#cb90-1" tabindex="-1"></a><span class="fu">head</span>(FWD)</span></code></pre></div>
+<pre><code>##   time site plot load_1h_Mg_ha load_10h_Mg_ha load_100h_Mg_ha load_fwd_Mg_ha
+## 1 post  400  101     0.9029624      1.4033325        0.000000       2.306295
+## 2  pre  400  101     2.2310300      4.7643799        5.382827      12.378237
+## 3 post   60  101     0.3571794      0.0000000        4.563755       4.920934
+## 4  pre   60  101     0.8695333      2.0983663        6.749952       9.717852
+## 5 post  400  102     0.1562554      0.5359028        4.278554       4.970712
+## 6  pre  400  102     0.2723569      3.2140721        2.850828       6.337257
+##   sc_length_1h sc_length_10h sc_length_100h
+## 1     3.652542      3.652542       6.087570
+## 2     3.652542      3.652542       6.087570
+## 3     3.641661      3.641661       6.069435
+## 4     3.641661      3.641661       6.069435
+## 5     3.651810      3.651810       6.086350
+## 6     3.651810      3.651810       6.086350</code></pre>
+<p><br></p>
+<p><strong>Step 2:</strong> create all necessary columns for input into
+the <code>CompileSurfaceFuels()</code> function</p>
+<div class="sourceCode" id="cb92"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb92-1"><a href="#cb92-1" tabindex="-1"></a>FWD_2 <span class="ot">&lt;-</span> FWD <span class="sc">%&gt;%</span></span>
+<span id="cb92-2"><a href="#cb92-2" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">trt_type =</span> <span class="st">&quot;fire&quot;</span>) <span class="sc">%&gt;%</span> <span class="co"># create a trt_type column </span></span>
+<span id="cb92-3"><a href="#cb92-3" tabindex="-1"></a>  <span class="fu">select</span>(time, trt_type, site, plot, <span class="fu">everything</span>()) <span class="co"># organize columns as desired </span></span>
+<span id="cb92-4"><a href="#cb92-4" tabindex="-1"></a></span>
+<span id="cb92-5"><a href="#cb92-5" tabindex="-1"></a><span class="fu">head</span>(FWD_2)</span></code></pre></div>
+<pre><code>##   time trt_type site plot load_1h_Mg_ha load_10h_Mg_ha load_100h_Mg_ha
+## 1 post     fire  400  101     0.9029624      1.4033325        0.000000
+## 2  pre     fire  400  101     2.2310300      4.7643799        5.382827
+## 3 post     fire   60  101     0.3571794      0.0000000        4.563755
+## 4  pre     fire   60  101     0.8695333      2.0983663        6.749952
+## 5 post     fire  400  102     0.1562554      0.5359028        4.278554
+## 6  pre     fire  400  102     0.2723569      3.2140721        2.850828
+##   load_fwd_Mg_ha sc_length_1h sc_length_10h sc_length_100h
+## 1       2.306295     3.652542      3.652542       6.087570
+## 2      12.378237     3.652542      3.652542       6.087570
+## 3       4.920934     3.641661      3.641661       6.069435
+## 4       9.717852     3.641661      3.641661       6.069435
+## 5       4.970712     3.651810      3.651810       6.086350
+## 6       6.337257     3.651810      3.651810       6.086350</code></pre>
+<p><br></p>
+<p><strong>Step 3:</strong> input data into
+<code>CompileSurfaceFuels()</code></p>
+<div class="sourceCode" id="cb94"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb94-1"><a href="#cb94-1" tabindex="-1"></a><span class="co"># keep the defaults for cwd_data (= &quot;none), wt_data (= &quot;not_needed&quot;), and units (= &quot;metric&quot;)</span></span>
+<span id="cb94-2"><a href="#cb94-2" tabindex="-1"></a>FWD_sum <span class="ot">&lt;-</span> <span class="fu">CompileSurfaceFuels</span>(<span class="at">fwd_data =</span> FWD_2,</span>
+<span id="cb94-3"><a href="#cb94-3" tabindex="-1"></a>                               <span class="at">design =</span> <span class="st">&quot;FFS&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb95"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb95-1"><a href="#cb95-1" tabindex="-1"></a>FWD_sum<span class="sc">$</span>site <span class="co"># pull out site-level summary</span></span></code></pre></div>
+<pre><code>##   time trt_type site avg_1h_Mg_ha se_1h_Mg_ha avg_10h_Mg_ha se_10h_Mg_ha
+## 1 post     fire  400    0.4969988  0.05976717      1.139383    0.2120926
+## 2  pre     fire  400    0.9968562  0.14076733      2.991177    0.3775630
+## 3 post     fire   60    0.4725502  0.07563463      1.735057    0.3326378
+## 4  pre     fire   60    1.2239823  0.20421903      4.355628    0.6468982
+## 5 post     fire  340    0.3601983  0.04450288      1.051188    0.2369040
+## 6  pre     fire  340    1.0927353  0.19285796      5.313776    0.9169993
+##   avg_100h_Mg_ha se_100h_Mg_ha
+## 1       1.317892     0.3381811
+## 2       4.438505     0.5900822
+## 3       4.151810     1.3535638
+## 4       9.035420     1.3362516
+## 5       2.351752     0.5969664
+## 6       6.336984     1.3793372</code></pre>
+<div class="sourceCode" id="cb97"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb97-1"><a href="#cb97-1" tabindex="-1"></a>FWD_sum<span class="sc">$</span>trt_type <span class="co"># pull out treatment-level summary </span></span></code></pre></div>
+<pre><code>##   time trt_type avg_1h_Mg_ha se_1h_Mg_ha avg_10h_Mg_ha se_10h_Mg_ha
+## 1 post     fire    0.4432491  0.04212089      1.308543    0.2147717
+## 2  pre     fire    1.1045246  0.06583011      4.220194    0.6738877
+##   avg_100h_Mg_ha se_100h_Mg_ha
+## 1       2.607151     0.8279885
+## 2       6.603636     1.3336957</code></pre>
+</div>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

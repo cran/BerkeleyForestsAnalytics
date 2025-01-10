@@ -1,0 +1,516 @@
+---
+title: "Berkeley Forests Analytics"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Berkeley Forests Analytics}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+## Introduction 
+
+In this vignette, we demonstrate the use of the `BerkeleyForestsAnalytics` package. We provide an example of how you might use the BFA package to compile pre- and post-burn field data. Through this example, we highlight some key components of the BFA package: 
+
+1. Handling of missing data 
+2. Handling of 0-values 
+3. Warning and error messages 
+    * Note: we do not demonstrate the full suite of warning and error messages. We demonstrate a subset of warnings and errors to give you an idea of what kinds of messages to expect, and how you might address them. 
+    
+The vignette is not a replacement for the README file, which covers the inputs and outputs of each function in detail. Additionally, the README gives detailed background information and references for the methods used in the package. We recommend that you review the README prior to or in conjunction with the vignette ([Find README here](https://github.com/kearutherford/BerkeleyForestsAnalytics#demonstration)). 
+    
+To begin, we'll load the required packages:
+
+```{r setup, message = FALSE}
+library(BerkeleyForestsAnalytics)
+library(dplyr)
+library(tidyr)
+```
+
+
+## Description of data 
+
+This vignette uses data from the Fire and Fire Surrogate (FFS) Study. In brief, FFS is an experimental study that was designed to evaluate the impacts of fire-only (prescribed fire), mechanical-only (mechanical thinning from below followed by mastication), and mechanical + fire (mechanical thinning from below followed by mastication followed by prescribed fire) treatments on forest structure, ecological function, and future fire behavior ([Read more about the FFS Study here](https://forests.berkeley.edu/research/current-projects/fire-and-fire-surrogates-study)).
+
+The data used in this vignette are from the fire-only (i.e., prescribed fire) stands. We used data from two time periods: before treatment (2001) and one year after treatment (2003). Note that the data were slightly modified for demonstrations purposes. Therefore, the outputs should not be taken to be actual findings from the FFS Study. 
+
+<br>
+
+The tree data have the following columns: 
+
+1. `id` time:site combined
+2. `time` pre (pre-burn) or post (post-burn)
+3. `site` compartment (60, 340, or 400)
+4. `plot` plot in which the individual tree was measured
+5. `exp_factor` stems per hectare
+6. `status` live (1) or dead (0)
+7. `decay` decay class. 1-5 for standing dead trees. 0 for live trees. 
+8. `species` species of the individual tree, using four-letter species codes
+9. `dbh` diameter at breast height in centimeters 
+10. `ht` total tree height in meters 
+
+<br>
+
+The surface and ground fuels data have the following columns:
+
+1. `time` pre (pre-burn) or post (post-burn)
+2. `site` compartment (60, 340, or 400)
+3. `plot` plot in which the individual transect was measured
+4. `transect` azimuth of transect on which the fuel data were collected
+5. `count_1h` count of 1-hour fuels
+6. `count_10h` count of 10-hour fuels
+7. `count_100h` count of 100-hour fuels
+8. `length_1h` length of the sampling transect for 1-hour fuels in meters
+9. `length_10h` length of the sampling transect for 10-hour fuels in meters
+10. `length_100h` length of the sampling transect for 100-hour fuels in meters
+11. `length_1000h` length of the sampling transect for 1000-hour fuels in meters
+12. `ssd_S` sum-of-squared-diameters for sound 1000-hour fuels
+13. `ssd_R` sum-of-squared-diameters for rotten 1000-hour fuels
+14. `litter_depth` litter depth in centimeters
+15. `duff_depth` duff depth in centimeters
+16. `slope` slope along the transect in percent
+
+
+## Tree biomass
+
+First, we'll use the `SummaryBiomass()` function to get above-ground stem, bark, and branch tree biomass at the plot level. 
+
+Let's investigate the input dataframe:
+
+```{r}
+# Note that the example data used in this vignette is included with the package
+# which is why we do not have to read in the data
+
+head(vign_trees_1)
+```
+
+<br>
+
+**Attempt 1:** Now, let's try using `SummaryBiomass()`. We'll keep the defaults for sp_codes (= "4letter"), units (= "metric"), and results (= "by_plot):
+
+```{r, error = TRUE}
+tree_bio <- SummaryBiomass(data = vign_trees_1,
+                           site = "id",
+                           plot = "plot",
+                           exp_factor = "exp_factor",
+                           status = "status",
+                           decay_class = "decay",
+                           species = "species",
+                           dbh = "dbh",
+                           ht = "ht")
+```
+
+And we get an error message. It looks like there is an improper use of a 0 expansion factor. An expansion factor of 0 should only be used to represent a plot with no trees. Let's look at where 0 expansion factors show up in the data: 
+
+```{r}
+vign_trees_1 %>%
+  filter(exp_factor == 0)
+
+vign_trees_1 %>%
+  filter(time == "post", site == "60", plot == "112")
+```
+
+It looks like a 0 expansion factor is properly used for post-60-113, but improperly used for post-60-112. We know what plot radius was used for larger trees, so we can confidently fill in the correct exp_factor here (24.69). The expansion factor will differ among studies. If a nested plot design was used, the expansion factor will differ among trees within the same plot. 
+
+<br>
+
+**Attempt 2:** After correcting the expansion factor in the input data, let's try again: 
+
+```{r, error = TRUE}
+tree_bio <- SummaryBiomass(data = vign_trees_2,
+                           site = "id",
+                           plot = "plot",
+                           exp_factor = "exp_factor",
+                           status = "status",
+                           decay_class = "decay",
+                           species = "species",
+                           dbh = "dbh",
+                           ht = "ht",
+                           results = "by_plot")
+```
+
+And we get another error message. It looks like there are some typos/transcription errors in the species codes. Looking at the list of unrecognized codes, we can tell that "ABCCO" should be "ABCO" (*Abies concolor*, commonly known as white fir) and "SME" should probably be "PSME" (*Pseudotsuga menziesii*, commonly known as Douglas-fir). Depending on the severity of the typo, you may want to go back to double check the species recorded on the original datasheet. In this case, the typos are fairly obvious. Let's figure out where these typos occur in the data: 
+
+```{r}
+vign_trees_2 %>%
+  filter(species == "ABCCO" | species == "SME")
+```
+
+<br>
+
+**Attempt 3:** After correcting the species codes in the input data, let's try again: 
+
+```{r}
+tree_bio <- SummaryBiomass(data = vign_trees_3,
+                           site = "id",
+                           plot = "plot",
+                           exp_factor = "exp_factor",
+                           status = "status",
+                           decay_class = "decay",
+                           species = "species",
+                           dbh = "dbh",
+                           ht = "ht",
+                           results = "by_plot")
+
+head(tree_bio)
+```
+
+This time the function runs. However, we get some warning messages. Let's look at the first warning, which tells us that there are trees with mismatched status/decay class. Recall that dead trees should have a decay class of 1-5 and live trees should have a decay class of NA or 0 (in this dataset we use 0 for live trees). Let's figure out where mismatches occur in the data: 
+
+```{r}
+vign_trees_3 %>% 
+  filter(status == 0, decay == 0 | is.na(decay))
+```
+
+This CADE (*Calocedrus decurrens*, commonly known as incense cedar) was documented as dead (status = 0) but was assigned a decay class of 0 (which is reserved for live trees). We look back at the original datasheet (not shown here) and see that the tree was recorded as dead with a decay class of 0 in the field (which tells us this was not a transcription error). However, we also notice that a height to live crown base was recorded for the tree, indicating that the dead status was likely a recording error. Given that two pieces of information recorded for the tree point to a live status (i.e., a decay class of 0 and a height to live crown base), we can fairly confidently change the CADE's status to live. 
+
+<br>
+
+**Attempt 4:** After correcting for the mismatch in status/decay class, let's try again: 
+
+```{r}
+tree_bio <- SummaryBiomass(data = vign_trees_4,
+                           site = "id",
+                           plot = "plot",
+                           exp_factor = "exp_factor",
+                           status = "status",
+                           decay_class = "decay",
+                           species = "species",
+                           dbh = "dbh",
+                           ht = "ht",
+                           results = "by_plot")
+
+head(tree_bio)
+```
+
+The first warning message is gone (good!), but we still have two other warning messages. Let's look at the next warning, which tells us there are missing DBH values in the dataframe. Let's look at where NA DBH values show up in the data: 
+
+```{r}
+vign_trees_4 %>% 
+  filter(exp_factor > 0, is.na(dbh))
+```
+
+We look back at the original datasheet (not shown here) and see that DBH was recorded for the tree in the field. This was just a simple transcription error. However, in your own dataset you may have DBH values (or height values) that are truly missing. In the case of truly missing values, you may want to build a model that will allow you to predict DBH from total height (or total height from DBH). Such models may already exist for your study area. 
+
+<br>
+
+**Attempt 5:** After filling in the missing DBH value, let's try again: 
+
+```{r}
+tree_bio <- SummaryBiomass(data = vign_trees_5,
+                           site = "id",
+                           plot = "plot",
+                           exp_factor = "exp_factor",
+                           status = "status",
+                           decay_class = "decay",
+                           species = "species",
+                           dbh = "dbh",
+                           ht = "ht",
+                           results = "by_plot")
+
+head(tree_bio)
+```
+
+There's only one warning message left. The Forest Inventory and Analysis (FIA) Regional Biomass Equations are for live trees with a DBH >= 2.54 cm (1 in) and dead trees with a DBH >= 12.7 cm (5 in). It is not appropriate to use these equations to estimate biomass for trees with DBH below the specified cutoffs. We could filter these trees out of the dataset to avoid the warning message; however, that isn't necessary. In this example, we'll leave the small trees in and make note of the warning. If you need to calculate biomass for the smaller trees in your dataset, you will need to explore other options. 
+
+
+## Forest composition and structure 
+
+Next, we'll use the `ForestComp()` and `ForestStr()` functions to get forest composition and structure at the plot level. 
+
+### ForestComp()
+
+Let's try using `ForestComp()` first: 
+
+```{r, error = TRUE}
+for_comp <- ForestComp(data = vign_trees_5,
+                       site = "id",
+                       plot = "plot",
+                       exp_factor = "exp_factor",
+                       status = "status",
+                       species = "species",
+                       dbh = "dbh",
+                       relative = "ba",
+                       units = "metric")
+```
+
+We get an error message. It looks like we set the "relative" parameter to "ba" instead of "BA". That's easy to fix: 
+
+```{r}
+for_comp <- ForestComp(data = vign_trees_5,
+                       site = "id",
+                       plot = "plot",
+                       exp_factor = "exp_factor",
+                       status = "status",
+                       species = "species",
+                       dbh = "dbh",
+                       relative = "BA",
+                       units = "metric")
+
+head(for_comp, n = 16)
+```
+
+This time the function runs without any warning or error messages. However, there is a note with a list of all the species present in the input data. Notice in the output (we just show two plots here) that each species present is accounted for in each plot, even if the dominance for the specific species is 0. When you compile the data beyond the plot level (e.g. to the compartment level), it's important that the 0 dominance values are captured. 
+
+Before moving on, let's quickly look at the output for the plot with no trees: 
+
+```{r}
+for_comp %>%
+  filter(site == "post_60", plot == "113")
+```
+
+Notice that the dominance is NA for all species. If there are no trees present, then % dominance is not applicable (i.e., NA). But why wouldn't it make sense to say that there is 0% CADE? There's no CADE on the plot, right? However, think about what % dominance actually is:
+
+\(\frac{BA_{sp,p}}{BA_{total,p}}\)
+
+*where*
+
+  * \(BA_{sp,p}\) is the basal area occupied by species sp in plot p
+  * \(BA_{total,p}\) is the total basal area for plot p 
+  
+If there are no trees present on plot p, then \(BA_{total,p}\) will be 0. And anything divided by 0 is not defined. From both a mathematical and logical perspective, % dominance for a plot without trees is not applicable. 
+
+
+### ForestStr()
+
+Now let's try using `ForestStr()`. We'll keep the default for units (= "metric"): 
+
+```{r, error = TRUE}
+for_str <- ForestStr(data = vign_trees_5,
+                     site = "id",
+                     plot = "plot",
+                     exp_factor = "Exp_factor",
+                     dbh = "dbh",
+                     ht = "ht")
+```
+
+We get an error message. Right, we have a column named "exp_factor" but not "Exp_factor" (column names are case sensitive)! That's easy to fix: 
+
+```{r}
+for_str <- ForestStr(data = vign_trees_5,
+                     site = "id",
+                     plot = "plot",
+                     exp_factor = "exp_factor",
+                     dbh = "dbh",
+                     ht = "ht")
+
+head(for_str)
+```
+
+This time the function runs without any warning or error messages. But before moving on, let's once again look at the output for the plot with no trees:
+
+```{r}
+for_str %>%
+  filter(site == "post_60", plot == "113")
+```
+
+Notice that basal area (ba_m2_ha) and stems per hectare (sph) are both 0. This is correct for a plot with no trees. Then, average quadratic mean diameter (qmd_cm), average diameter at breast height (dbh_cm), and average height (ht_m) are all NA. These tree-level variables are not applicable for a plot without trees. For example, there is no "average diameter at breast height" if there are no diameters at breast height to take an average of. The average diameter at breast height is not 0 in this case! When you compile the data beyond the plot level (e.g., to the compartment level), it's important that the 0s and NAs are accurately captured. A 0 qmd_cm here (at the plot level) would incorrectly pull down the compartment qmd_cm.  
+
+
+## Surface and ground fuel loads 
+
+Finally, we'll use the `FineFuels()`, `CoarseFuels()`, and `LitterDuff()` functions to get surface and ground fuel loads at the plot level. 
+
+Let's investigate the input dataframe:
+```{r}
+head(vign_fuels_1)
+```
+
+
+### FineFuels() 
+
+**Attempt 1:** Now, let's try using `FineFuels()`. We'll keep the defaults for sp_codes (= "4letter") and units (= "metric"): 
+
+```{r, error = TRUE}
+FWD <- FineFuels(tree_data = vign_trees_5,
+                 fuel_data = vign_fuels_1)
+```
+
+And we get an error message. It looks like there is a duplicate time:site:plot:transect observation for post-400-9-159. Let's take a closer look: 
+
+```{r}
+vign_fuels_1 %>%
+  filter(time == "post", site == "400", plot == "9")
+
+vign_fuels_1 %>%
+  filter(time == "pre", site == "400", plot == "9")
+```
+
+Based on the field protocol, we know that there should be two transects per time:site:plot and that the two azimuths should be the same pre- and post-treatment. For the post-treatment observations, we can see that the counts, litter depth, and duff depth are not the same. Looking at the pre-treatment observations, we can see that the transect azimuths for site 400, plot 9 should be 159 and 239. It's likely that one of the two post-400-9 transects should be changed to 239. We look back at the original datasheet (not shown here) and see that this is indeed the case.
+
+<br>
+
+**Attempt 2:** After correcting the transect azimuth in the input fuel data, let's try again:
+
+```{r, error = TRUE}
+FWD <- FineFuels(tree_data = vign_trees_5,
+                 fuel_data = vign_fuels_2)
+```
+
+We get another error message. It looks like there is an issue with one (or more) of the 100-hour counts. Let's figure out where the issue occurs in the data: 
+
+```{r}
+vign_fuels_2 %>%
+  mutate(count_100h_check = abs(round(count_100h))) %>%
+  filter(count_100h != count_100h_check)
+```
+
+We can see that the count_100h value for pre-340-13-215 is 1.1, which is not a whole number. We look back at the original datasheet (not shown here) and see that this count should be 1. This was a transcription error.
+
+<br>
+
+**Attempt 3:** After correcting the count_100h value in the input fuel data, let's try again:
+
+```{r, error = TRUE, warning = FALSE}
+FWD <- FineFuels(tree_data = vign_trees_5,
+                 fuel_data = vign_fuels_3)
+```
+
+And we get yet another error message. Remember that there must be a one-to-one match between time:site:plot identities of tree and fuel data. See background information in the README file for more on why this one-to-one match is important. We known that there isn't a plot 11 in the dataset, but that there is a plot 111. Pre_340_11 should probably be corrected to pre_340_111. 
+
+<br>
+
+**Attempt 4:** After correcting the plot id in the input fuel data, let's try again:
+
+```{r}
+FWD <- FineFuels(tree_data = vign_trees_5,
+                 fuel_data = vign_fuels_4)
+
+head(FWD)
+```
+
+This time the function runs. However, we get some warning messages. Let's look at the first warning, which tells us that there are missing 10-hour counts. Let's look at where NA count_10h values show up in the data:
+
+```{r}
+vign_fuels_4 %>%
+  filter(is.na(count_10h))
+```
+
+We look back the the original datasheet (not shown here) and see that this 10-hour count was not recorded in the field. It truly is missing, and there is little we can do about that at this point. Fortunately, there are two transects per time:site:plot. The other transect will still allow us to get a plot-level estimate of the 10-hour fuel load. The function will appropriately account for the missing 10-hour count. 
+
+The final warning message tells us that not all species codes were recognized. We look at the list of unrecognized codes: CONU (*Cornus nuttallii*, commonly known as pacific dogwood), NODE (*Notholithocarpus densiflorus*, commonly known as tanoak), and QUKE (*Quercus kelloggii*, commonly known as black oak). None of these are species code typos (but you should check for typos!). For the surface and ground fuel load calculations, we currently only have the necessary values for 19 Sierra Nevada conifer species (see background information in the README file for more detail on this topic). These three species are hardwoods and are, therefore, not included in the list of 19 Sierra Nevada conifers. This warning should not alarm us. Given the information currently available for the Sierra Nevada, the best we can do is assign generic "all species" values for these hardwoods. 
+
+
+### CoarseFuels() 
+
+**Attempt 1:** Now, let's try using `CoarseFuels()`. We'll keep the defaults for sp_codes (= "4letter") and units (= "metric"): 
+
+```{r, error = TRUE}
+CWD <- CoarseFuels(tree_data = vign_trees_5,
+                   fuel_data = vign_fuels_4,
+                   summed = "yes")
+```
+
+Another error message! It looks like there is a missing transect length. Let's look at where NA length_1000h values show up in the data: 
+
+```{r}
+vign_fuels_4 %>%
+  filter(is.na(length_1000h))
+```
+
+Based on the field protocol, we know that 1000-hour fuels were sampled for 11.34 meters along each transect. This is an easy fix. 
+
+<br>
+
+**Attempt 2:** After filling in the missing transect length, let's try again: 
+
+```{r}
+CWD <- CoarseFuels(tree_data = vign_trees_5,
+                   fuel_data = vign_fuels_5,
+                   summed = "yes")
+
+head(CWD)
+```
+
+This time the function runs. We are already familiar with this warning message (discussed in the `FineFuels()` function section above). 
+
+
+### LitterDuff() 
+
+Lastly, let's try using `LitterDuff()`. We'll keep the defaults for sp_codes (= "4letter"), units (= "metric"), and measurement (= "separate"): 
+
+```{r}
+LD <- LitterDuff(tree_data = vign_trees_5,
+                 fuel_data = vign_fuels_5)
+
+head(LD)
+```
+
+The function runs. Once again, we are familiar with this particular warning message (discussed in the `FineFuels()` function section above). 
+
+
+## Further data compilation 
+
+Now that we have everything summarized at the plot level, let's try compiling some of the data to the compartment level and then to the entire treatment (here the fire-only treatment) level. 
+
+### Tree biomass 
+
+**Step 1:** estimate tree biomass at the plot level 
+
+We already went through this process above, but let's recall what the output dataframe looks like: 
+
+```{r}
+head(tree_bio)
+```
+
+<br> 
+
+**Step 2:** create all necessary columns for input into the `CompilePlots()` function
+```{r}
+tree_bio_2 <- tree_bio %>%
+  separate(site, c("time", "site")) %>% # separate id into time and site columns 
+  mutate(trt_type = "fire") %>% # create a trt_type column 
+  select(time, trt_type, site, plot, everything()) # organize columns as desired 
+
+head(tree_bio_2)
+```
+
+<br>
+
+**Step 3:** input data into `CompilePlots()`
+```{r}
+# keep the defaults for wt_data (= "not_needed")
+tree_bio_sum <- CompilePlots(data = tree_bio_2,
+                             design = "FFS")
+```
+
+```{r}
+tree_bio_sum$site # pull out site-level summary 
+tree_bio_sum$trt_type # pull out treatment-level summary 
+```
+
+
+### Fine woody debris 
+
+**Step 1:** estimate fine fuel loads at the plot level 
+
+We already went through this process above, but let's recall what the output dataframe looks like: 
+
+```{r}
+head(FWD)
+```
+
+<br> 
+
+**Step 2:** create all necessary columns for input into the `CompileSurfaceFuels()` function
+```{r}
+FWD_2 <- FWD %>%
+  mutate(trt_type = "fire") %>% # create a trt_type column 
+  select(time, trt_type, site, plot, everything()) # organize columns as desired 
+
+head(FWD_2)
+```
+
+<br>
+
+**Step 3:** input data into `CompileSurfaceFuels()`
+```{r}
+# keep the defaults for cwd_data (= "none), wt_data (= "not_needed"), and units (= "metric")
+FWD_sum <- CompileSurfaceFuels(fwd_data = FWD_2,
+                               design = "FFS")
+```
+
+```{r}
+FWD_sum$site # pull out site-level summary
+FWD_sum$trt_type # pull out treatment-level summary 
+```
+
