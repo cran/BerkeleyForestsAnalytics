@@ -10,6 +10,7 @@ library(tidyr)
 head(vign_trees_1)
 
 ## ----error = TRUE-------------------------------------------------------------
+try({
 tree_bio <- SummaryBiomass(data = vign_trees_1,
                            site = "id",
                            plot = "plot",
@@ -19,6 +20,7 @@ tree_bio <- SummaryBiomass(data = vign_trees_1,
                            species = "species",
                            dbh = "dbh",
                            ht = "ht")
+})
 
 ## -----------------------------------------------------------------------------
 vign_trees_1 %>%
@@ -28,6 +30,7 @@ vign_trees_1 %>%
   filter(time == "post", site == "60", plot == "112")
 
 ## ----error = TRUE-------------------------------------------------------------
+try({
 tree_bio <- SummaryBiomass(data = vign_trees_2,
                            site = "id",
                            plot = "plot",
@@ -38,6 +41,7 @@ tree_bio <- SummaryBiomass(data = vign_trees_2,
                            dbh = "dbh",
                            ht = "ht",
                            results = "by_plot")
+})
 
 ## -----------------------------------------------------------------------------
 vign_trees_2 %>%
@@ -94,6 +98,7 @@ tree_bio <- SummaryBiomass(data = vign_trees_5,
 head(tree_bio)
 
 ## ----error = TRUE-------------------------------------------------------------
+try({
 for_comp <- ForestComp(data = vign_trees_5,
                        site = "id",
                        plot = "plot",
@@ -103,6 +108,7 @@ for_comp <- ForestComp(data = vign_trees_5,
                        dbh = "dbh",
                        relative = "ba",
                        units = "metric")
+})
 
 ## -----------------------------------------------------------------------------
 for_comp <- ForestComp(data = vign_trees_5,
@@ -122,12 +128,14 @@ for_comp %>%
   filter(site == "post_60", plot == "113")
 
 ## ----error = TRUE-------------------------------------------------------------
+try({
 for_str <- ForestStr(data = vign_trees_5,
                      site = "id",
                      plot = "plot",
                      exp_factor = "Exp_factor",
                      dbh = "dbh",
                      ht = "ht")
+})
 
 ## -----------------------------------------------------------------------------
 for_str <- ForestStr(data = vign_trees_5,
@@ -147,8 +155,10 @@ for_str %>%
 head(vign_fuels_1)
 
 ## ----error = TRUE-------------------------------------------------------------
+try({
 FWD <- FineFuels(tree_data = vign_trees_5,
                  fuel_data = vign_fuels_1)
+})
 
 ## -----------------------------------------------------------------------------
 vign_fuels_1 %>%
@@ -158,8 +168,10 @@ vign_fuels_1 %>%
   filter(time == "pre", site == "400", plot == "9")
 
 ## ----error = TRUE-------------------------------------------------------------
+try({
 FWD <- FineFuels(tree_data = vign_trees_5,
                  fuel_data = vign_fuels_2)
+})
 
 ## -----------------------------------------------------------------------------
 vign_fuels_2 %>%
@@ -167,8 +179,10 @@ vign_fuels_2 %>%
   filter(count_100h != count_100h_check)
 
 ## ----error = TRUE, warning = FALSE--------------------------------------------
+try({
 FWD <- FineFuels(tree_data = vign_trees_5,
                  fuel_data = vign_fuels_3)
+})
 
 ## -----------------------------------------------------------------------------
 FWD <- FineFuels(tree_data = vign_trees_5,
@@ -181,9 +195,11 @@ vign_fuels_4 %>%
   filter(is.na(count_10h))
 
 ## ----error = TRUE-------------------------------------------------------------
+try({
 CWD <- CoarseFuels(tree_data = vign_trees_5,
                    fuel_data = vign_fuels_4,
                    summed = "yes")
+})
 
 ## -----------------------------------------------------------------------------
 vign_fuels_4 %>%
