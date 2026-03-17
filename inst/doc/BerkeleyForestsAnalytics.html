@@ -48,8 +48,9 @@ overflow: visible;
 }
 </style>
 <style type="text/css" data-origin="pandoc">
+html { -webkit-text-size-adjust: 100%; }
 pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
 .sourceCode { overflow: visible; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -60,7 +61,7 @@ div.sourceCode { overflow: auto; }
 }
 @media print {
 pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
 }
 pre.numberSource code
 { counter-reset: source-line 0; }
@@ -459,7 +460,8 @@ above-ground stem, bark, and branch tree biomass at the plot level.</p>
 <span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a>                           <span class="at">species =</span> <span class="st">&quot;species&quot;</span>,</span>
 <span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a>                           <span class="at">dbh =</span> <span class="st">&quot;dbh&quot;</span>,</span>
 <span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a>                           <span class="at">ht =</span> <span class="st">&quot;ht&quot;</span>)</span></code></pre></div>
-<pre><code>## Error in ValidateSumData(data_val = data, site_val = site, plot_val = plot, : There are plots with a recorded expansion factor of 0, but with more than one row.
+<pre><code>## Error in `ValidateSumData()`:
+## ! There are plots with a recorded expansion factor of 0, but with more than one row.
 ## Plots with no trees should be represented by a single row with site and plot filled in as appropriate and an exp_factor of 0.</code></pre>
 <p>And we get an error message. It looks like there is an improper use
 of a 0 expansion factor. An expansion factor of 0 should only be used to
@@ -506,7 +508,8 @@ the input data, let’s try again:</p>
 ## The biomass of these dead trees will NOT be adjusted.
 ## Consider investigating these trees with mismatched status/decay class.
 ## </code></pre>
-<pre><code>## Error in ValidateSumData(data_val = data, site_val = site, plot_val = plot, : Not all species codes were recognized!
+<pre><code>## Error in `ValidateSumData()`:
+## ! Not all species codes were recognized!
 ## Unrecognized codes: ABCCO SME</code></pre>
 <p>And we get another error message. It looks like there are some
 typos/transcription errors in the species codes. Looking at the list of
@@ -667,7 +670,8 @@ structure at the plot level.</p>
 <span id="cb34-7"><a href="#cb34-7" tabindex="-1"></a>                       <span class="at">dbh =</span> <span class="st">&quot;dbh&quot;</span>,</span>
 <span id="cb34-8"><a href="#cb34-8" tabindex="-1"></a>                       <span class="at">relative =</span> <span class="st">&quot;ba&quot;</span>,</span>
 <span id="cb34-9"><a href="#cb34-9" tabindex="-1"></a>                       <span class="at">units =</span> <span class="st">&quot;metric&quot;</span>)</span></code></pre></div>
-<pre><code>## Error in ValidateCompData(data_val = data, site_val = site, plot_val = plot, : The &quot;relative&quot; parameter must be set to either &quot;BA&quot; or &quot;density&quot;.</code></pre>
+<pre><code>## Error in `ValidateCompData()`:
+## ! The &quot;relative&quot; parameter must be set to either &quot;BA&quot; or &quot;density&quot;.</code></pre>
 <p>We get an error message. It looks like we set the “relative”
 parameter to “ba” instead of “BA”. That’s easy to fix:</p>
 <div class="sourceCode" id="cb36"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" tabindex="-1"></a>for_comp <span class="ot">&lt;-</span> <span class="fu">ForestComp</span>(<span class="at">data =</span> vign_trees_5,</span>
@@ -744,7 +748,8 @@ for units (= “metric”):</p>
 <span id="cb42-4"><a href="#cb42-4" tabindex="-1"></a>                     <span class="at">exp_factor =</span> <span class="st">&quot;Exp_factor&quot;</span>,</span>
 <span id="cb42-5"><a href="#cb42-5" tabindex="-1"></a>                     <span class="at">dbh =</span> <span class="st">&quot;dbh&quot;</span>,</span>
 <span id="cb42-6"><a href="#cb42-6" tabindex="-1"></a>                     <span class="at">ht =</span> <span class="st">&quot;ht&quot;</span>)</span></code></pre></div>
-<pre><code>## Error in ValidateStrData(data_val = data, site_val = site, plot_val = plot, : There is no column named &quot;Exp_factor&quot; in the provided dataframe.</code></pre>
+<pre><code>## Error in `ValidateStrData()`:
+## ! There is no column named &quot;Exp_factor&quot; in the provided dataframe.</code></pre>
 <p>We get an error message. Right, we have a column named “exp_factor”
 but not “Exp_factor” (column names are case sensitive)! That’s easy to
 fix:</p>
@@ -811,7 +816,8 @@ get surface and ground fuel loads at the plot level.</p>
 “4letter”) and units (= “metric”):</p>
 <div class="sourceCode" id="cb50"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" tabindex="-1"></a>FWD <span class="ot">&lt;-</span> <span class="fu">FineFuels</span>(<span class="at">tree_data =</span> vign_trees_5,</span>
 <span id="cb50-2"><a href="#cb50-2" tabindex="-1"></a>                 <span class="at">fuel_data =</span> vign_fuels_1)</span></code></pre></div>
-<pre><code>## Error in ValidateFWD(fuel_data_val = fuel_data, units_val = units): For fuel_data, there are repeat time:site:plot:transect observations.
+<pre><code>## Error in `ValidateFWD()`:
+## ! For fuel_data, there are repeat time:site:plot:transect observations.
 ## There should only be one observation/row for an individual transect at a specific time:site:plot.
 ## Investigate the following time:site:plot:transect combinations: post-400-9-159</code></pre>
 <p>And we get an error message. It looks like there is a duplicate
@@ -847,7 +853,8 @@ indeed the case.</p>
 the input fuel data, let’s try again:</p>
 <div class="sourceCode" id="cb56"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb56-1"><a href="#cb56-1" tabindex="-1"></a>FWD <span class="ot">&lt;-</span> <span class="fu">FineFuels</span>(<span class="at">tree_data =</span> vign_trees_5,</span>
 <span id="cb56-2"><a href="#cb56-2" tabindex="-1"></a>                 <span class="at">fuel_data =</span> vign_fuels_2)</span></code></pre></div>
-<pre><code>## Error in ValidateFWD(fuel_data_val = fuel_data, units_val = units): For fuel_data, count_100h must be a positive, whole number.</code></pre>
+<pre><code>## Error in `ValidateFWD()`:
+## ! For fuel_data, count_100h must be a positive, whole number.</code></pre>
 <p>We get another error message. It looks like there is an issue with
 one (or more) of the 100-hour counts. Let’s figure out where the issue
 occurs in the data:</p>
@@ -869,7 +876,8 @@ error.</p>
 the input fuel data, let’s try again:</p>
 <div class="sourceCode" id="cb60"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb60-1"><a href="#cb60-1" tabindex="-1"></a>FWD <span class="ot">&lt;-</span> <span class="fu">FineFuels</span>(<span class="at">tree_data =</span> vign_trees_5,</span>
 <span id="cb60-2"><a href="#cb60-2" tabindex="-1"></a>                 <span class="at">fuel_data =</span> vign_fuels_3)</span></code></pre></div>
-<pre><code>## Error in ValidateMatches(fuel_match = step1, tree_match = step2): Tree and fuel data did not completely match!
+<pre><code>## Error in `ValidateMatches()`:
+## ! Tree and fuel data did not completely match!
 ## These time:site:plot combinations have tree data but no fuel data: pre-340-111 
 ## These time:site:plot combinations have fuel data but no tree data: pre-340-11</code></pre>
 <p>And we get yet another error message. Remember that there must be a
@@ -943,7 +951,8 @@ can do is assign generic “all species” values for these hardwoods.</p>
 <div class="sourceCode" id="cb69"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb69-1"><a href="#cb69-1" tabindex="-1"></a>CWD <span class="ot">&lt;-</span> <span class="fu">CoarseFuels</span>(<span class="at">tree_data =</span> vign_trees_5,</span>
 <span id="cb69-2"><a href="#cb69-2" tabindex="-1"></a>                   <span class="at">fuel_data =</span> vign_fuels_4,</span>
 <span id="cb69-3"><a href="#cb69-3" tabindex="-1"></a>                   <span class="at">summed =</span> <span class="st">&quot;yes&quot;</span>)</span></code></pre></div>
-<pre><code>## Error in ValidateCWD(fuel_data_val = fuel_data, units_val = units, sum_val = summed): For fuel_data, there are missing values in the length_1000h column.</code></pre>
+<pre><code>## Error in `ValidateCWD()`:
+## ! For fuel_data, there are missing values in the length_1000h column.</code></pre>
 <p>Another error message! It looks like there is a missing transect
 length. Let’s look at where NA length_1000h values show up in the
 data:</p>

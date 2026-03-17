@@ -1,7 +1,7 @@
-6431cc547dbe39dcb33afc8d2276fbc4 *DESCRIPTION
+46b6de3c05dcfb6c7d61aa280859c3b2 *DESCRIPTION
 cea8e86d1566ebf20668dcfc1b47ac7a *LICENSE
 5040ce82063493acd884afe2838b15d4 *NAMESPACE
-d0e14fe6c36d61fc3bccf3703f004fe3 *NEWS.md
+88cb8cd1204106a375f80a714f8755f8 *NEWS.md
 fb48a1f2331fd30a6e823b0d60259c2e *R/BerkeleyForestsAnalytics-package.R
 69de42b74a39fec61b7c9296af746371 *R/compilation_general.R
 7e42eb74e79ae01d9b4f6a099fd17650 *R/compilation_surface_fuels.R
@@ -9,9 +9,9 @@ fb48a1f2331fd30a6e823b0d60259c2e *R/BerkeleyForestsAnalytics-package.R
 2d883fa6062b64bbe368c0b6c18bd164 *R/forest_comp.R
 a402c93352859eaadb66b7691c3be5ff *R/forest_structure.R
 3d571844d120b3e04beeff3a90326beb *R/litter_duff.R
-735fe170abbcdf46412c4ea8c596da15 *R/nsvb_formatting.R
+1acd7178e53462e475440b7644097342 *R/nsvb_formatting.R
 83714966052661bd0361186e90ccce11 *R/nsvb_plot_sum.R
-999dc4995c5fed384ddedad2e9f65b86 *R/nsvb_tree_bio.R
+d837290e73242a315217cc7d099340ad *R/nsvb_tree_bio.R
 f99cd60ace91d94a8bc865a70097fb0f *R/summary_bio.R
 650b86a7404a0950d43570c734058cf6 *R/summary_bio_loops.R
 ed946833fc528a3558e5df00ae2c9ffa *R/surface_fuels_cwd.R
@@ -22,8 +22,8 @@ ed946833fc528a3558e5df00ae2c9ffa *R/surface_fuels_cwd.R
 1bf46348cdace49deec475773f62652a *R/tree_bio_bark.R
 b61157a0dcd57811de1f49bbce3e2dcd *R/tree_bio_branch.R
 ebb459ca613950e02f3b856cdba9c24c *R/tree_bio_stem.R
-b0a1b542694cbea05963bd339b368e85 *README.md
-3aef57861d8430056551f999315647f6 *build/vignette.rds
+86c43c1ad6f736d1d6c21cfa1a861277 *README.md
+36ccbc9bdf4254e9096b0edce500fcc3 *build/vignette.rds
 d7587f811e54e32994a1cdb30520825b *data/bio_NT_demo.rda
 be8744e4ce55f04cd5ae1f6b6bb063fa *data/bio_demo_data.rda
 3f793ae410156a7fc13b983721b88a87 *data/compilation_cwd_demo.rda
@@ -53,12 +53,12 @@ b6b04ac58e1585928b6c6a4274e84693 *data/vign_fuels_2.rda
 bc8b32138e8deea64c53b1079e67e5d3 *data/vign_trees_3.rda
 d00898bd87ee82d57a4d2fb64c6de631 *data/vign_trees_4.rda
 d75a98a20bf312f6a5f1231517e10464 *data/vign_trees_5.rda
-62dc80b22be12c8f3ccf608f69d58e67 *inst/CITATION
+05ca5a957fba2ea883dbe64314819ac7 *inst/CITATION
 6ff051c7dd90610fc35b54bc81c12f7e *inst/doc/BerkeleyForestsAnalytics.R
 1334e42c21e9b0cc8a852f6308d32d24 *inst/doc/BerkeleyForestsAnalytics.Rmd
-7d09aa0c6cedf5c0955f2fc3a391239d *inst/doc/BerkeleyForestsAnalytics.html
+4f544fb57e5bd121e454fbbbd2a17aa5 *inst/doc/BerkeleyForestsAnalytics.html
 6c3fd99a4fedecd5720f9f85e24065f3 *man/BerkeleyForestsAnalytics-package.Rd
-8b45d4a835d48324dec35c51849ab8db *man/BiomassNSVB.Rd
+b5f03d13a70f32b05edae4e6d1b3e0a6 *man/BiomassNSVB.Rd
 ea63ea07ae546d005fc2f6db810ba7c2 *man/CoarseFuels.Rd
 57e4d47e5975d4fe2333178625e31faa *man/CompilePlots.Rd
 afa311f1129983f1e539dcc2e3315d89 *man/CompileSurfaceFuels.Rd
@@ -99,7 +99,7 @@ a0db53efb7325bf69175761012e3617e *man/vign_trees_3.Rd
 15287420b06f62327e07e5340cf71e6e *man/vign_trees_4.Rd
 525f863a9100786b1ef13678f26f6be6 *man/vign_trees_5.Rd
 b8f5656fabaad5e42586fa7c6c27c7ac *tests/testthat.R
-6ecd8f37125bda9ed0158d8f588f5caa *tests/testthat/test-biomass_NSVB.R
+1369b64ac88f9760f296415f4ac22737 *tests/testthat/test-biomass_NSVB.R
 459158d327c782da865c6fa2cc4bd12a *tests/testthat/test-compile_plots.R
 516ee160a5e52269b273cd7e64968e9b *tests/testthat/test-compile_surface_fuels.R
 1808c263e1bb6cf6303dc3c4e0a9f76e *tests/testthat/test-forest_comp.R
